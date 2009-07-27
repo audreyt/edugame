@@ -322,11 +322,6 @@ renderFlavor flavor = mkShape
     , top             = 233
     , width           = 160
     , height          = 9
-    , cornerRadius    = 0
-    , verticalPadding = 0
-    , fill            = FillWhite
-    , stroke          = StrokeNone
-    , shadow          = ShadowNone
     , text            = mkText
         { txt   = flavor
         , font  = "AR-PL-New-Kai"
@@ -419,35 +414,36 @@ renderTurns turns = mkShape
     }
 
 renderCard :: Card -> [Shape]
-renderCard Action{..} = shapes
-    where
-    shapes =
-        [ renderFlavor flavor
-        , renderName name "LiGothicMed"
-        , renderTurns turns
-        , renderEffect effect (Color 0.6 0.3 0.3) (Color 1 0.9 0.9)
-        , innerRect (Color 0.6 0.3 0.3) (Color 0.6 0.5 0.5)
-        , outerRect
-        ]
-renderCard Skill{..} = shapes
-    where
-    shapes =
-        [ renderFlavor flavor
-        , renderName name "LiGothicMed"
-        , renderEffect effect (Color 0.1 0.6 0.1) (Color 0.9 1 0.9)
-        , innerRect (Color 0.1 0.6 0.1) (Color 0.5 0.6 0.4)
-        , outerRect
-        ]
+renderCard Environment{..} =
+    [ renderFlavor flavor
+    , renderName name "LiGothicMed"
+    , (renderEffect effect (Color 0.1 0.6 0.1) (Color 0.9 1 0.9)){ stroke = StrokeDotted }
+    , outerRect{ fill = FillRadial (Color 0.5 0.7 0.4) }
+    ]
+renderCard Action{..} =
+    [ renderFlavor flavor
+    , renderName name "LiGothicMed"
+    , renderTurns turns
+    , renderEffect effect (Color 0.6 0.3 0.3) (Color 1 0.9 0.9)
+    , innerRect (Color 0.6 0.3 0.3) (Color 0.6 0.5 0.5)
+    , outerRect
+    ]
+renderCard Skill{..} =
+    [ renderFlavor flavor
+    , renderName name "LiGothicMed"
+    , renderEffect effect (Color 0.1 0.6 0.1) (Color 0.9 1 0.9)
+    , innerRect (Color 0.1 0.6 0.1) (Color 0.5 0.6 0.4)
+    , outerRect
+    ]
 
-renderCard Student{..} = shapes
+renderCard Student{..} = topicsShapes ++ paralyzedShapes ++ styleShapes ++
+    [ renderFlavor flavor
+    , renderName name "cwTeXYen"
+    , renderPower [$qq|$interested / $uninterested|] (Color 0.5 0.25 0) (Color 1 0.95 0.9)
+    , innerRect (Color 0.5 0.25 0) (Color 0.9 0.85 0.8)
+    , outerRect
+    ]
     where
-    shapes = topicsShapes ++ paralyzedShapes ++ styleShapes ++
-        [ renderFlavor flavor
-        , renderName name "cwTeXYen"
-        , renderPower [$qq|$interested / $uninterested|] (Color 0.5 0.25 0) (Color 1 0.95 0.9)
-        , innerRect (Color 0.5 0.25 0) (Color 0.9 0.85 0.8)
-        , outerRect
-        ]
     styleShapes = map styleIcon styles
     paralyzedShapes = [ renderParalyzed t n | t <- paralyzed' | n <- [((1 - toEnum (length paralyzed')) / 2)..] ]
     paralyzed' = filter (`notElem` topics) paralyzed
@@ -459,15 +455,14 @@ renderCard Student{..} = shapes
         | t <- topics
         | n <- [((1 - toEnum (length topics)) / 2)..]
         ]
-renderCard Lesson{..} = shapes
+renderCard Lesson{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
+    [ renderFlavor flavor
+    , renderName name "cwTeXHeiBold"
+    , renderPower power (Color 0.3 0.3 0.5) (Color 0.9 0.9 1)
+    , innerRect (Color 0.3 0.3 0.5) (Color 0.5 0.5 0.6)
+    , outerRect
+    ]
     where
-    shapes = topicsShapes ++ abilityShapes ++ styleShapes ++
-        [ renderFlavor flavor
-        , renderName name "cwTeXHeiBold"
-        , renderPower power (Color 0.3 0.3 0.5) (Color 0.9 0.9 1)
-        , innerRect (Color 0.3 0.3 0.5) (Color 0.5 0.5 0.6)
-        , outerRect
-        ]
     power | interested == uninterested = interested'
           | otherwise                  = [$qq|$interested' / $uninterested'|]
     interested' = maybeNil interested
@@ -499,6 +494,6 @@ outerRect = mkShape
     }
 
 -- allCards = concat [ students, lessons, actions, skills, environments, assistants ]
-allCards = skills
+allCards = environments
 
 #include "data.hs"
