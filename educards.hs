@@ -85,7 +85,7 @@ tell application "OmniGraffle Professional 5"
         set count_canvas to count of canvases
         set canvas_no to count_canvas
         tell canvas canvas_no
-{renderCards 0 0 $ students ++ lessons }
+{renderCards 0 0 allCards }
         end tell
     end tell
 end tell
@@ -433,34 +433,7 @@ outerRect = mkShape
     , cornerRadius = 15
     }
 
-allCards = concat [ students, lessons, actions, skills, environments, assistants ]
-
-actions =
-    [ Action "面談" 0 "觀察一名學生。"
-        "好的開始，是成功的一半。"
-    , Action "弱勢生免費名額" 2 "放入一張新的學生卡，面向下。"
-        "雖然財務拮据，自主培力學園還是為弱勢生保留免費名額。"
-    ]
-
-skills =
-    [ Skill "幽默" "無興趣時，蒙昧值採左右的平均，而非右邊。"
-        "他們喜歡的是學問本身，抑或只是課堂的遊戲活動？"
-    , Skill "以火點火" "教學額外具有點燃興趣之能力。"
-        "千年暗室，一燈即明。"
-    ]
-
-environments =
-    [ Environment "獨立教育工作者社群" "所有人的技藝成為共享的環境卡。"
-        "這是追求成長的必然結果。"
-    , Environment "師生人格平等" "所有人的親和骰點數 +1"    
-        "教育是生命對生命的共鳴，師與生的角色只是表面。"
-    ]
-
-assistants =
-    [ Assistant "萬事通" [A,R] [a,p] [] 1
-        "光靠讀書，也能學會游泳喔。"
-    , Assistant "妙博士" [] [] [i] 4
-        "它很美妙，它真的很美妙。"
-    ]
+-- allCards = concat [ students, lessons, actions, skills, environments, assistants ]
+allCards = actions
 
 #include "data.hs"

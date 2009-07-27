@@ -1,15 +1,47 @@
 use strict;
 use encoding 'utf8';
 use FindBin '$Bin';
+sub parse (&$);
 
-my $students = << '.';
+my $actions = parse {
+    my ($name, $turns, $effect, $flavor) = @_;
 
-students =
+    $flavor = splitWords($flavor);
+    $effect = splitWords($effect);
+
+    return << ".";
+    , Action "$name" $turns "$effect"
+        "$flavor"
 .
-open STUDENTS, "$Bin/data/students.txt";
-while (<STUDENTS>) {
-    chomp;
-    my (undef, $name, $styles, $power, $topics, $paralyzed, $flavor) = split(/\s*\|\s*/, $_);
+
+} "actions";
+
+my $skills = parse {
+    my ($name, $effect, $flavor) = @_;
+
+    $effect = splitWords($effect);
+
+    return << ".";
+    , Skill "$name" "$effect"
+        "$flavor"
+.
+
+} "skills";
+
+my $environments = parse {
+    my ($name, $effect, $flavor) = @_;
+
+    $effect = splitWords($effect);
+
+    return << ".";
+    , Environment "$name" "$effect"
+        "$flavor"
+.
+
+} "environments";
+
+my $students = parse {
+    my ($name, $styles, $power, $topics, $paralyzed, $flavor) = @_;
     $styles = join ',', sort split(//, $styles);
 
     my ($p, $t) = split(/\//, $power);
@@ -18,39 +50,18 @@ while (<STUDENTS>) {
     $t = 0 if $t eq 'x';
     $topics = '' if $topics eq '*';
 
-    my @flavor = split(/(?<=\W)/, $flavor);
-    my $len = 0;
-    $flavor = '';
-    while (my $chunk = shift @flavor) {
-        $len += length $chunk;
-        if ($len > 18) {
-            $len = length $chunk;
-            $flavor .= '\\n';
-        }
-        $flavor .= $chunk;
-    }
-
+    $flavor = splitWords($flavor);
     $topics = join ',', sort split(//, lc $topics);
     $paralyzed = join ',', sort split(//, lc $paralyzed);
     
-    $students .= << ".";
+    return << ".";
     , Student "$name" [$styles] $p $t [$topics] [$paralyzed]
         "$flavor"
 .
+} "students";
 
-}
-
-$students =~ s/,/[/ or $students .= "   [\n";
-$students .= "   ]\n";
-
-my $lessons = << '.';
-
-lessons =
-.
-open LESSONS, "$Bin/data/lessons.txt";
-while (<LESSONS>) {
-    chomp;
-    my (undef, $name, $styles, $power, $topics, $ability, $flavor) = split(/\s*\|\s*/, $_);
+my $lessons = parse {
+    my ($name, $styles, $power, $topics, $abilities, $flavor) = @_;
     $styles = join ',', sort split(//, $styles);
 
     my ($p, $t) = split(/\//, $power);
@@ -59,30 +70,73 @@ while (<LESSONS>) {
     $t = 0 if $t eq 'x';
     $topics = '' if $topics eq '*';
 
-    my @flavor = split(/(?<=\W)/, $flavor);
+    $flavor = splitWords($flavor);
+    $topics = join ',', sort split(//, lc $topics);
+    $abilities = join ',', sort split(//, lc $abilities);
+    
+    return << ".";
+    , Lesson "$name" [$styles] $p $t [$topics] [$abilities]
+        "$flavor"
+.
+} "lessons";
+
+my $assistants = parse {
+    my ($name, $styles, $topics, $abilities, $cost, $flavor) = @_;
+    $styles = join ',', sort split(//, $styles);
+
+    $flavor = splitWords($flavor);
+    $topics = join ',', sort split(//, lc $topics);
+    $abilities = join ',', sort split(//, lc $abilities);
+    
+    return << ".";
+    , Assistant "$name" [$styles] [$topics] [$abilities] $cost
+        "$flavor"
+.
+} "assistants";
+
+#######
+
+open FH, '>:utf8', 'data.hs';
+print FH $actions, $students, $lessons, $skills, $environments, $assistants;
+close FH;
+
+#######
+
+sub splitWords {
+    my $words = shift;
+    my @chunks = split(/(?<=\W)/, $words);
     my $len = 0;
-    $flavor = '';
-    while (my $chunk = shift @flavor) {
+    my $out = '';
+    while (my $chunk = shift @chunks) {
         $len += length $chunk;
         if ($len > 18) {
             $len = length $chunk;
-            $flavor .= '\\n';
+            $words .= '\\n';
         }
-        $flavor .= $chunk;
+        $out .= $chunk;
     }
-
-    $topics = join ',', sort split(//, lc $topics);
-    $ability = join ',', sort split(//, lc $ability);
-    
-    $lessons .= << ".";
-    , Lesson "$name" [$styles] $p $t [$topics] [$ability]
-        "$flavor"
-.
-
+    return $out;
 }
 
-$lessons =~ s/,/[/ or $lessons .= "   [\n";
-$lessons .= "   ]\n";
+sub parse (&$) {
+    my ($code, $type) = @_;
+    open my $fh, '<:utf8', "$Bin/data/$type.txt" or die $!;
 
-open FH, '>:utf8', 'data.hs';
-print FH $students, $lessons;
+    my $out = << ".";
+
+$type =
+.
+
+    while (<$fh>) {
+        chomp;
+        my @fields = split(/\s*\|\s*/, $_) ;
+        shift @fields;
+        $out .= $code->(@fields);
+    }
+
+    $out =~ s/,/[/ or $out .= "   [\n";
+    $out .= "   ]\n";
+
+    return $out;
+}
+
