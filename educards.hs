@@ -1,4 +1,4 @@
-{-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances #-}
+{-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances, PatternGuards, CPP #-}
 import Data.Char
 import System.Environment.FindBin
 import qualified System.IO.UTF8 as UTF8
@@ -8,7 +8,7 @@ import Text.InterpolatedString.Perl6
 data Style = V | A | R | K deriving Show
 
 -- 「學門」：遊戲有「數學」、「中文」、「英文」、「自然」、「社會」、「藝術」、「體育」七個學門。
-data Topic = Mat | Chi | Eng | Nat | Soc | Art | Phy deriving (Show, Enum, Bounded)
+data Topic = Mat | Chi | Eng | Nat | Soc | Art | Phy deriving (Eq, Show, Enum, Bounded)
 
 ---- 學門簡寫
 c,e,m,n,s,a,p :: Topic
@@ -72,52 +72,6 @@ data Card
 
 --------------------------
 
-allCards = concat [ students, lessons, actions, skills, environments, assistants ]
-
-students =
-    [ Student "沈括" [V,A,R,K] 1 9 [c,m,n,s,a,p] []
-        "博學善文，於天文、方志、律曆、音樂、醫藥、卜算無所不通，皆有所論著。"
-    , Student "梵谷" [V] 2 8 [s,a] [n,c,e,s,p] 
-        "愈加思索，我愈覺得沒有什麼藝術，比對人群的愛更純粹。"
-    ]
-
-lessons =
-    [ Lesson "獨立研究" [V,A,R,K] 5 0 [m,n,a] []
-        "好的老師，讓學生在他的課上學得好。\n最好的老師，讓學生離開他之後，也學得好。"
-    , Lesson "個別輔導" [V,A] 1 3 anything [l]
-        "最有效的診斷，是一對一。"
-    ]
-
-actions =
-    [ Action "面談" 0 "觀察一名學生。"
-        "好的開始，是成功的一半。"
-    , Action "弱勢生免費名額" 2 "放入一張新的學生卡，面向下。"
-        "雖然財務拮据，自主培力學園還是為弱勢生保留免費名額。"
-    ]
-
-skills =
-    [ Skill "幽默" "無興趣時，蒙昧值採左右的平均，而非右邊。"
-        "他們喜歡的是學問本身，抑或只是課堂的遊戲活動？"
-    , Skill "以火點火" "教學額外具有點燃興趣之能力。"
-        "千年暗室，一燈即明。"
-    ]
-
-environments =
-    [ Environment "獨立教育工作者社群" "所有人的技藝成為共享的環境卡。"
-        "這是追求成長的必然結果。"
-    , Environment "師生人格平等" "所有人的親和骰點數 +1"    
-        "教育是生命對生命的共鳴，師與生的角色只是表面。"
-    ]
-
-assistants =
-    [ Assistant "萬事通" [A,R] [a,p] [] 1
-        "光靠讀書，也能學會游泳喔。"
-    , Assistant "妙博士" [] [] [i] 4
-        "它很美妙，它真的很美妙。"
-    ]
-
---------------------------
-
 say = UTF8.putStrLn
 
 instance ShowQ [Shape] where
@@ -127,23 +81,37 @@ main = do
     say [$qc|
 
 tell application "OmniGraffle Professional 5"
-        tell canvas of front window
-{renderCards 0 0 lessons}
+    tell document of front window
+        set count_canvas to count of canvases
+        set canvas_no to count_canvas
+        tell canvas canvas_no
+{renderCards 0 0 $ students ++ lessons }
         end tell
+    end tell
 end tell
     |]
 
 renderCards :: X -> Y -> [Card] -> [Shape]
 renderCards _  _  []     = []
-renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ renderCards (xo + cardWidth) yo cs
+renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ maybePageBreak ++ renderCards xo' yo' cs
     where
     adjustOffset s@Shape{..} = s{ left = left + xo, top = top + yo }
+    (xo', yo', maybePageBreak)
+        | moveRight <- xo + cardWidth
+        , moveRight < paperWidth
+        = (moveRight, yo, [])
+        | moveDown <- yo + cardHeight
+        , moveDown < paperHeight
+        = (0, moveDown, [])
+        | otherwise
+        = (0, 0, [PageBreak])
 
 -- Constants
-
-cardWidth, cardHeight :: Float
+cardWidth, cardHeight, paperWidth :: Float
 cardWidth = 180
 cardHeight = 252
+paperWidth = 500
+paperHeight = 600
 
 type X = Float
 type Y = Float
@@ -169,9 +137,16 @@ data Shape = Shape
     , shadow          :: Shadow
     , text            :: Text
     , picture         :: Picture
-    }
+    } | PageBreak
 
 instance ShowQ Shape where
+    showQ PageBreak = [$q|
+        end tell
+        make new canvas
+        set count_canvas to count of canvases
+        set canvas_no to count_canvas
+        tell canvas canvas_no
+    |]
     showQ Shape{..} = [$qq|$_begin $stroke $shadow $text $fill $_origin $_size $_end
 $picture
 |]
@@ -181,12 +156,13 @@ $picture
         _size   = [$qq|size: \{$width, $height}, |]
         _origin = [$qq|origin: \{$left, $top}, |]
 
-data Fill = FillWhite | FillLinear Color | FillRadial Color | FillColor Color | FillNone
+data Fill = FillWhite | FillLinear Color | FillRadial Color | FillRadialOut Color | FillColor Color | FillNone
 
 instance ShowQ Fill where
     showQ FillWhite = ""
     showQ (FillLinear color) = [$qq|gradient $color fill color:\{0.95, 0.95, 0.95}, fill: linear fill,|]
     showQ (FillRadial color) = [$qq|fill $color gradient color:\{0.95, 0.95, 0.95}, fill: radial fill,|]
+    showQ (FillRadialOut color) = [$qq|gradient $color fill: radial fill,|]
     showQ (FillColor color) = [$qq|fill $color|]
     showQ FillNone = "fill: no fill,"
 
@@ -241,7 +217,7 @@ styleIcon A = mkShape
     { width   = 23
     , height  = 33
     , left    = 5
-    , top     = 216
+    , top     = 195
     , picture = PictureRelative "images/a.png"
     }
 styleIcon R = mkShape
@@ -255,7 +231,7 @@ styleIcon K = mkShape
     { width   = 23
     , height  = 33
     , left    = 152
-    , top     = 216
+    , top     = 195
     , picture = PictureRelative "images/k.png"
     }
 
@@ -279,13 +255,13 @@ abilityIcon topic = mkShape
     }
 
 topicText :: Topic -> Text
-topicText Mat = mkIconText '☀' 0.5 0.7 0.4 "AR-PL-New-Kai"
+topicText Art = mkIconText '♪' 0.6 0.4 0.4 "HiraMinProN-W3"
 topicText Chi = mkIconText '文' 0.4 0.6 0.7 "AR-PL-New-Kai"
 topicText Eng = mkIconText 'a' 0.6 0.6 0.7 "AmericanTypewriter"
-topicText Nat = mkIconText 'π' 0.4 0.5 0.4 "TrajanPro-Regular"
-topicText Soc = mkIconText '☮' 0.7 0.5 0.7 "ArialUnicodeMS"
-topicText Art = mkIconText '♪' 0.6 0.4 0.4 "HiraMinProN-W3"
+topicText Mat = mkIconText 'π' 0.4 0.5 0.4 "TrajanPro-Regular"
+topicText Nat = mkIconText '☀' 0.5 0.7 0.4 "AR-PL-New-Kai"
 topicText Phy = mkIconText '➶' 0.7 0.7 0.5 "DejaVuSansMono"
+topicText Soc = mkIconText '☮' 0.7 0.5 0.7 "ArialUnicodeMS"
 
 topicIcon :: Topic -> Shape
 topicIcon topic = mkShape
@@ -301,11 +277,9 @@ topicIcon topic = mkShape
     , text            = topicText topic
     }
 
-
-
 renderAllTopics = (topicIcon Chi)
     { text = mkIconText '∞' 0 0 0 "AmericanTypewriter"
-    , fill = FillRadial (Color 0.7 0.7 0.9)
+    , fill = FillRadial (Color 0.8 0.8 0.9)
     }
 
 renderAbility :: Ability -> Float -> Shape
@@ -318,10 +292,20 @@ renderTopic topic n = icon{ top = top + n * (height + 5) }
     where
     icon@Shape{..} = topicIcon topic
 
+renderParalyzed :: Topic -> Float -> Shape
+renderParalyzed topic n = icon
+    { top    = top + n * (height + 5)
+    , left   = 154
+    , stroke = StrokeSingle (Color 0.5 0.3 0.3)
+    , fill   = FillRadialOut (Color 0.7 0.7 0.7)
+    }
+    where
+    icon@Shape{..} = topicIcon topic
+
 renderFlavor :: String -> Shape
 renderFlavor flavor = mkShape
     { left            = 10
-    , top             = 200
+    , top             = 233
     , width           = 160
     , height          = 9
     , cornerRadius    = 0
@@ -331,7 +315,7 @@ renderFlavor flavor = mkShape
     , shadow          = ShadowNone
     , text            = Text
         { txt   = flavor
-        , color = Color 0.35 0.35 0.35
+        , color = Color 0 0 0
         , font  = "AR-PL-New-Kai"
         , size  = 8
         }
@@ -351,8 +335,8 @@ mkShape = Shape
     , picture         = PictureNone
     }
 
-renderName :: String -> Shape
-renderName name = mkShape
+renderName :: String -> String -> Shape
+renderName name fontName = mkShape
     { left            = 76
     , top             = 43
     , width           = 28
@@ -365,21 +349,21 @@ renderName name = mkShape
     , text            = Text
         { txt   = name
         , color = Color 0 0 0
-        , font  = "cwTeXHeiBold"
+        , font  = fontName
         , size  = 18
         }
     }
 
-renderPower :: String -> Shape
-renderPower power = mkShape
+renderPower :: String -> Color -> Color -> Shape
+renderPower power strokeColor fillColor = mkShape
     { left            = 64
-    , top             = 220
+    , top             = 200
     , width           = 52
     , height          = 19
     , cornerRadius    = 20
     , verticalPadding = 2
-    , fill            = FillColor (Color 0.9 0.9 1)
-    , stroke          = StrokeSingle (Color 0.3 0.3 0.5)
+    , stroke          = StrokeSingle strokeColor
+    , fill            = FillColor fillColor
     , shadow          = ShadowBottom
     , text            = Text
         { txt   = power
@@ -390,10 +374,35 @@ renderPower power = mkShape
     }
 
 renderCard :: Card -> [Shape]
+renderCard Student{..} = shapes
+    where
+    shapes = topicsShapes ++ paralyzedShapes ++ styleShapes ++
+        [ renderFlavor flavor
+        , renderName name "cwTeXYen"
+        , renderPower [$qq|$interested / $uninterested|] (Color 0.5 0.25 0) (Color 1 0.95 0.9)
+        , innerRect (Color 0.5 0.25 0) (Color 0.9 0.85 0.8)
+        , outerRect
+        ]
+    styleShapes = map styleIcon styles
+    paralyzedShapes = [ renderParalyzed t n | t <- paralyzed' | n <- [((1 - toEnum (length paralyzed')) / 2)..] ]
+    paralyzed' = filter (`notElem` topics) paralyzed
+    topicsShapes =
+        [ let shape = renderTopic t n in
+            if t `elem` paralyzed
+                then shape{ stroke = StrokeSingle (Color 0.5 0.3 0.3) }
+                else shape
+        | t <- topics
+        | n <- [((1 - toEnum (length topics)) / 2)..]
+        ]
 renderCard Lesson{..} = shapes
     where
-    shapes = topicsShapes ++ abilityShapes ++ styleShapes
-        ++ [ renderFlavor flavor, renderName name, renderPower power, innerRect, outerRect ]
+    shapes = topicsShapes ++ abilityShapes ++ styleShapes ++
+        [ renderFlavor flavor
+        , renderName name "cwTeXHeiBold"
+        , renderPower power (Color 0.3 0.3 0.5) (Color 0.9 0.9 1)
+        , innerRect (Color 0.3 0.3 0.5) (Color 0.5 0.5 0.6)
+        , outerRect
+        ]
     power | interested == uninterested = interested'
           | otherwise                  = [$qq|$interested' / $uninterested'|]
     interested' = maybeNil interested
@@ -407,19 +416,51 @@ renderCard Lesson{..} = shapes
         [] -> [ renderAllTopics ]
         _  -> [ renderTopic t n | t <- topics | n <- [((1 - toEnum (length topics)) / 2)..] ]
 
-innerRect = mkShape
+innerRect strokeColor fillColor = mkShape
     { width        = 108
     , height       = 154
     , left         = 36
     , top          = 35
     , cornerRadius = 15
-    , stroke       = StrokeDouble (Color 0.3 0.3 0.5)
-    , fill         = FillLinear (Color 0.5 0.5 0.6)
+    , stroke       = StrokeDouble strokeColor
+    , fill         = FillLinear fillColor
     }
 
 outerRect = mkShape
     { width  = 180
     , height = 252
     , stroke = StrokeBlack
+    , cornerRadius = 15
     }
 
+allCards = concat [ students, lessons, actions, skills, environments, assistants ]
+
+actions =
+    [ Action "面談" 0 "觀察一名學生。"
+        "好的開始，是成功的一半。"
+    , Action "弱勢生免費名額" 2 "放入一張新的學生卡，面向下。"
+        "雖然財務拮据，自主培力學園還是為弱勢生保留免費名額。"
+    ]
+
+skills =
+    [ Skill "幽默" "無興趣時，蒙昧值採左右的平均，而非右邊。"
+        "他們喜歡的是學問本身，抑或只是課堂的遊戲活動？"
+    , Skill "以火點火" "教學額外具有點燃興趣之能力。"
+        "千年暗室，一燈即明。"
+    ]
+
+environments =
+    [ Environment "獨立教育工作者社群" "所有人的技藝成為共享的環境卡。"
+        "這是追求成長的必然結果。"
+    , Environment "師生人格平等" "所有人的親和骰點數 +1"    
+        "教育是生命對生命的共鳴，師與生的角色只是表面。"
+    ]
+
+assistants =
+    [ Assistant "萬事通" [A,R] [a,p] [] 1
+        "光靠讀書，也能學會游泳喔。"
+    , Assistant "妙博士" [] [] [i] 4
+        "它很美妙，它真的很美妙。"
+    ]
+
+#include "data.hs"
