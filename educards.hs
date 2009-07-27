@@ -118,12 +118,27 @@ type Y = Float
 
 data Stroke = StrokeWhite | StrokeBlack | StrokeDotted | StrokeDouble Color | StrokeSingle Color | StrokeNone
 data Shadow = ShadowBottom | ShadowMiddle | ShadowNone
+data Placement = PlacementTop | PlacementMiddle
+
+instance ShowQ Placement where
+    showQ PlacementTop = "text placement: top,"
+    showQ _ = ""
+
 data Text   = Text
     { txt   :: String
     , color :: Color
     , font  :: String
     , size  :: Int
+    , placement :: Placement
     } | TextNone
+
+mkText = Text
+    { txt       = ""
+    , color     = Color 0 0 0
+    , font      = "ArialUnicodeMS"
+    , size      = 0
+    , placement = PlacementMiddle
+    }
 
 data Shape = Shape
     { left            :: X
@@ -181,7 +196,7 @@ instance ShowQ Shadow where
 
 instance ShowQ Text where
     showQ TextNone = ""
-    showQ Text{..} = [$qq|text: \{ $color text: "$txt", font: "$font", alignment: center $_size }, |]
+    showQ Text{..} = [$qq|text: \{ $color text: "$txt", font: "$font", alignment: center $_size }, $placement |]
         where
         _size = case size of
             0 -> ""
@@ -198,11 +213,10 @@ data Color = Color { red :: Float, green :: Float, blue :: Float }
 instance ShowQ Color where
     showQ Color{..} = [$qq|color: \{$red, $green, $blue}, |]
 
-mkIconText ch r g b f = Text
+mkIconText ch r g b f = mkText
     { txt   = [ch]
     , color = Color r g b
     , font  = f
-    , size  = 0
     }
 
 styleIcon :: Style -> Shape
@@ -313,9 +327,8 @@ renderFlavor flavor = mkShape
     , fill            = FillWhite
     , stroke          = StrokeNone
     , shadow          = ShadowNone
-    , text            = Text
+    , text            = mkText
         { txt   = flavor
-        , color = Color 0 0 0
         , font  = "AR-PL-New-Kai"
         , size  = 8
         }
@@ -346,9 +359,8 @@ renderName name fontName = mkShape
     , fill            = FillNone
     , stroke          = StrokeNone
     , shadow          = ShadowNone
-    , text            = Text
+    , text            = mkText
         { txt   = name
-        , color = Color 0 0 0
         , font  = fontName
         , size  = 18
         }
@@ -365,15 +377,58 @@ renderPower power strokeColor fillColor = mkShape
     , stroke          = StrokeSingle strokeColor
     , fill            = FillColor fillColor
     , shadow          = ShadowBottom
-    , text            = Text
+    , text            = mkText
         { txt   = power
-        , color = Color 0 0 0
         , font  = "DroidSerif"
         , size  = 10
         }
     }
 
+renderEffect :: String -> Shape
+renderEffect effect = mkShape
+    { left            = 18
+    , top             = 197
+    , width           = 144
+    , height          = 25
+    , stroke          = StrokeSingle (Color 0.6 0.3 0.3)
+    , shadow          = ShadowBottom
+    , fill            = FillColor (Color 1 0.9 0.9)
+    , cornerRadius    = 3
+    , text            = mkText
+        { txt   = effect
+        , font  = "LiGothicMed"
+        , size  = 8
+        }
+    }
+
+renderTurns :: Int -> Shape
+renderTurns turns = mkShape
+    { left            = 77
+    , top             = 171
+    , width           = 25
+    , height          = 16
+    , stroke          = StrokeSingle (Color 0.6 0.3 0.3)
+    , fill            = FillWhite
+    , verticalPadding = 4
+    , text            = mkText
+        { txt   = show turns ++ " ⏎"
+        , font  = "Gentium"
+        , size  = 8
+        , placement = PlacementTop
+        }
+    }
+
 renderCard :: Card -> [Shape]
+renderCard Action{..} = shapes
+    where
+    shapes =
+        [ renderFlavor flavor
+        , renderName name "LiGothicMed"
+        , renderTurns turns
+        , renderEffect effect
+        , innerRect (Color 0.6 0.3 0.3) (Color 0.6 0.5 0.5)
+        , outerRect
+        ]
 renderCard Student{..} = shapes
     where
     shapes = topicsShapes ++ paralyzedShapes ++ styleShapes ++

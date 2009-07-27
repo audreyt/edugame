@@ -111,7 +111,7 @@ sub splitWords {
         $len += length $chunk;
         if ($len > 18) {
             $len = length $chunk;
-            $words .= '\\n';
+            $out .= '\\n';
         }
         $out .= $chunk;
     }
