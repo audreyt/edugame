@@ -384,15 +384,15 @@ renderPower power strokeColor fillColor = mkShape
         }
     }
 
-renderEffect :: String -> Shape
-renderEffect effect = mkShape
+renderEffect :: String -> Color -> Color -> Shape
+renderEffect effect strokeColor fillColor = mkShape
     { left            = 18
     , top             = 197
     , width           = 144
     , height          = 25
-    , stroke          = StrokeSingle (Color 0.6 0.3 0.3)
+    , stroke          = StrokeSingle strokeColor
     , shadow          = ShadowBottom
-    , fill            = FillColor (Color 1 0.9 0.9)
+    , fill            = FillColor fillColor
     , cornerRadius    = 3
     , text            = mkText
         { txt   = effect
@@ -425,10 +425,20 @@ renderCard Action{..} = shapes
         [ renderFlavor flavor
         , renderName name "LiGothicMed"
         , renderTurns turns
-        , renderEffect effect
+        , renderEffect effect (Color 0.6 0.3 0.3) (Color 1 0.9 0.9)
         , innerRect (Color 0.6 0.3 0.3) (Color 0.6 0.5 0.5)
         , outerRect
         ]
+renderCard Skill{..} = shapes
+    where
+    shapes =
+        [ renderFlavor flavor
+        , renderName name "LiGothicMed"
+        , renderEffect effect (Color 0.1 0.6 0.1) (Color 0.9 1 0.9)
+        , innerRect (Color 0.1 0.6 0.1) (Color 0.5 0.6 0.4)
+        , outerRect
+        ]
+
 renderCard Student{..} = shapes
     where
     shapes = topicsShapes ++ paralyzedShapes ++ styleShapes ++
@@ -489,6 +499,6 @@ outerRect = mkShape
     }
 
 -- allCards = concat [ students, lessons, actions, skills, environments, assistants ]
-allCards = actions
+allCards = skills
 
 #include "data.hs"

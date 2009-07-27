@@ -19,6 +19,7 @@ my $actions = parse {
 my $skills = parse {
     my ($name, $effect, $flavor) = @_;
 
+    $flavor = splitWords($flavor);
     $effect = splitWords($effect);
 
     return << ".";
@@ -31,6 +32,7 @@ my $skills = parse {
 my $environments = parse {
     my ($name, $effect, $flavor) = @_;
 
+    $flavor = splitWords($flavor);
     $effect = splitWords($effect);
 
     return << ".";
