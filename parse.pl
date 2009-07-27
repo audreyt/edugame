@@ -44,7 +44,7 @@ my $environments = parse {
 
 my $students = parse {
     my ($name, $styles, $power, $topics, $paralyzed, $flavor) = @_;
-    $styles = join ',', sort split(//, $styles);
+    $styles = join ',', map {/[a-z]/ ? "Anti ".uc($_) : $_ } sort split(//, $styles);
 
     my ($p, $t) = split(/\//, $power);
     $t ||= $p;

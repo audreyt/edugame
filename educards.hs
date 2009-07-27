@@ -5,7 +5,7 @@ import qualified System.IO.UTF8 as UTF8
 import Text.InterpolatedString.Perl6
 
 -- 「學習風格」：在牌的四角，有VARK四種：V代表視覺型、A代表聽覺型、R代表閱讀型、K代表操作型。
-data Style = V | A | R | K deriving Show
+data Style = V | A | R | K | Anti Style deriving Show
 
 -- 「學門」：遊戲有「數學」、「中文」、「英文」、「自然」、「社會」、「藝術」、「體育」七個學門。
 data Topic = Mat | Chi | Eng | Nat | Soc | Art | Phy deriving (Eq, Show, Enum, Bounded)
@@ -81,14 +81,14 @@ _Left_ = 5
 _Top_ = 5
 
 main = do
-    say [$qc|
+    say [$qq|
 
 tell application "OmniGraffle Professional 5"
     tell document of front window
         set count_canvas to count of canvases
         set canvas_no to count_canvas
         tell canvas canvas_no
-{renderCards _Left_ _Top_ allCards }
+{ renderCards _Left_ _Top_ allCards }
         end tell
     end tell
 end tell
@@ -184,6 +184,7 @@ instance ShowQ Fill where
     showQ (FillColor color) = [$qq|fill $color|]
     showQ FillNone = "fill: no fill,"
 
+
 instance ShowQ Stroke where
     showQ StrokeNone = "draws stroke:false,"
     showQ StrokeDotted = "stroke color: {0.5, 0.5, 0.5}, stroke pattern: 24,"
@@ -251,6 +252,12 @@ styleIcon K = mkShape
     , left    = 152
     , top     = 195
     , picture = PictureRelative "images/k.png"
+    }
+styleIcon (Anti (Anti x)) = styleIcon x
+styleIcon (Anti x) = (styleIcon x)
+    { stroke = StrokeDotted
+    , cornerRadius = 10
+    , fill = FillRadial (Color 0.7 0.7 0.7)
     }
 
 abilityText :: Ability -> Text
@@ -417,6 +424,8 @@ renderTurns turns = mkShape
         }
     }
 
+_DarkRed_ = Color 0.6 0.3 0.3
+
 renderCard :: Card -> [Shape]
 renderCard Environment{..} =
     [ renderFlavor flavor
@@ -428,8 +437,8 @@ renderCard Action{..} =
     [ renderFlavor flavor
     , renderName name "LiGothicMed"
     , renderTurns turns
-    , renderEffect effect (Color 0.6 0.3 0.3) (Color 1 0.9 0.9)
-    , innerRect (Color 0.6 0.3 0.3) (Color 0.6 0.5 0.5)
+    , renderEffect effect _DarkRed_ (Color 1 0.9 0.9)
+    , innerRect _DarkRed_ (Color 0.6 0.5 0.5)
     , outerRect
     ]
 renderCard Skill{..} =
