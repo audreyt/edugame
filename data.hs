@@ -219,11 +219,11 @@ environments =
    ]
 
 assistants =
-    [ Assistant "萬事通" [A,R] [a,p] [] 1
+    [ Assistant "萬事通" [A,R] [a,p] [u] 1
         "光靠讀書，也能學會游泳喔。"
-    , Assistant "小畫家" [V] [c,e,s] [] 1
+    , Assistant "小畫家" [V] [c,e,s] [u] 1
         "這樣看，不就很明顯了嗎？"
-    , Assistant "實驗鼠" [K] [m,n] [] 1
+    , Assistant "實驗鼠" [K] [m,n] [u] 1
         "再試一下。"
     , Assistant "妙博士" [] [] [i] 4
         "它很美妙，它真的很美妙。"

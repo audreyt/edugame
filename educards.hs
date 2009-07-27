@@ -77,6 +77,9 @@ say = UTF8.putStrLn
 instance ShowQ [Shape] where
     showQ = concatMap showQ
 
+_Left_ = 5
+_Top_ = 5
+
 main = do
     say [$qc|
 
@@ -85,7 +88,7 @@ tell application "OmniGraffle Professional 5"
         set count_canvas to count of canvases
         set canvas_no to count_canvas
         tell canvas canvas_no
-{renderCards 0 0 allCards }
+{renderCards _Left_ _Top_ allCards }
         end tell
     end tell
 end tell
@@ -102,9 +105,9 @@ renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ maybePageBreak ++ 
         = (moveRight, yo, [])
         | moveDown <- yo + cardHeight
         , moveDown < paperHeight
-        = (0, moveDown, [])
+        = (_Left_, moveDown, [])
         | otherwise
-        = (0, 0, [PageBreak])
+        = (_Left_, _Top_, [PageBreak])
 
 -- Constants
 cardWidth, cardHeight, paperWidth :: Float
@@ -116,7 +119,7 @@ paperHeight = 600
 type X = Float
 type Y = Float
 
-data Stroke = StrokeWhite | StrokeBlack | StrokeDotted | StrokeDouble Color | StrokeSingle Color | StrokeNone
+data Stroke = StrokeWhite | StrokeBlack | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeNone
 data Shadow = ShadowBottom | ShadowMiddle | ShadowNone
 data Placement = PlacementTop | PlacementMiddle
 
@@ -188,6 +191,7 @@ instance ShowQ Stroke where
     showQ StrokeBlack = "stroke color: {0, 0, 0},"
     showQ (StrokeDouble color) = [$qq|stroke $color thickness:5, double stroke:true,|]
     showQ (StrokeSingle color) = [$qq|stroke $color|]
+    showQ (StrokeDoubleDotted color) = [$qq|stroke $color thickness:5, double stroke:true, stroke pattern: 24, |]
 
 instance ShowQ Shadow where
     showQ ShadowBottom = "shadow vector: {0, 1}, shadow fuzziness: 4,"
@@ -250,8 +254,8 @@ styleIcon K = mkShape
     }
 
 abilityText :: Ability -> Text
-abilityText Look = mkIconText '✆' 0.2 0.2 0.7 "ArialUnicodeMS"
-abilityText Inspire = mkIconText '♥' 0.2 0.7 0.2 "ArialUnicodeMS"
+abilityText Look = mkIconText '✆' 0.2 0.7 0.2 "ArialUnicodeMS"
+abilityText Inspire = mkIconText '♥' 0.2 0.2 0.7 "ArialUnicodeMS"
 abilityText Unparalyze = mkIconText '✙' 0.7 0.2 0.2 "ArialUnicodeMS"
 
 abilityIcon :: Ability -> Shape
@@ -418,7 +422,7 @@ renderCard Environment{..} =
     [ renderFlavor flavor
     , renderName name "LiGothicMed"
     , (renderEffect effect (Color 0.1 0.6 0.1) (Color 0.9 1 0.9)){ stroke = StrokeDotted }
-    , outerRect{ fill = FillRadial (Color 0.5 0.7 0.4) }
+    , outerRect{ fill = FillRadialOut (Color 0.5 0.7 0.4) }
     ]
 renderCard Action{..} =
     [ renderFlavor flavor
@@ -475,6 +479,22 @@ renderCard Lesson{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
     topicsShapes = case topics of
         [] -> [ renderAllTopics ]
         _  -> [ renderTopic t n | t <- topics | n <- [((1 - toEnum (length topics)) / 2)..] ]
+renderCard Assistant{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
+    [ renderFlavor flavor
+    , renderName name "cwTeXHeiBold"
+    , renderPower (show (negate cost)) (Color 0.3 0.3 0.5) (Color 0.9 0.9 1)
+    , (innerRect undefined undefined)
+        { fill = FillRadialOut (Color 0.5 0.5 0.6)
+        , stroke = StrokeDoubleDotted (Color 0.3 0.3 0.5)
+        }
+    , outerRect
+    ]
+    where
+    styleShapes = map styleIcon styles
+    abilityShapes = [ renderAbility t n | t <- abilities | n <- [((1 - toEnum (length abilities)) / 2)..] ]
+    topicsShapes = case topics of
+        [] -> [ renderAllTopics ]
+        _  -> [ renderTopic t n | t <- topics | n <- [((1 - toEnum (length topics)) / 2)..] ]
 
 innerRect strokeColor fillColor = mkShape
     { width        = 108
@@ -493,7 +513,6 @@ outerRect = mkShape
     , cornerRadius = 15
     }
 
--- allCards = concat [ students, lessons, actions, skills, environments, assistants ]
-allCards = environments
+allCards = concat [ students, lessons, actions, skills, environments, assistants ]
 
 #include "data.hs"
