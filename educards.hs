@@ -10,6 +10,14 @@ data Style = V | A | R | K | Anti Style deriving Show
 -- 「學門」：遊戲有「數學」、「中文」、「英文」、「自然」、「社會」、「藝術」、「體育」七個學門。
 data Topic = Mat | Chi | Eng | Nat | Soc | Art | Phy deriving (Eq, Show, Enum, Bounded)
 
+topicName Mat = "數學"
+topicName Chi = "中文"
+topicName Eng = "英文"
+topicName Nat = "自然"
+topicName Soc = "社會"
+topicName Art = "藝術"
+topicName Phy = "體育"
+
 ---- 學門簡寫
 c,e,m,n,s,a,p :: Topic
 c = Chi; e = Eng; m = Mat; n = Nat; s = Soc; a = Art; p = Phy
@@ -68,6 +76,7 @@ data Card
         , cost              :: Int          -- 啟動所需力道
         , flavor            :: String       -- 斜體字
         }
+    | TopicCard { topic :: Topic }
     deriving Show
 
 --------------------------
@@ -77,10 +86,10 @@ say = UTF8.putStrLn
 instance ShowQ [Shape] where
     showQ = concatMap showQ
 
-_Left_ = 5
-_Top_ = 5
+_Left_ = 23
+_Top_ = 23
 
-main = do
+main2 = do
     say [$qq|
 
 tell application "OmniGraffle Professional 5"
@@ -93,6 +102,25 @@ tell application "OmniGraffle Professional 5"
     end tell
 end tell
     |]
+
+main = do
+    say [$qq|
+
+tell application "OmniGraffle Professional 5"
+    tell document of front window
+        set count_canvas to count of canvases
+        set canvas_no to count_canvas
+        tell canvas canvas_no
+{ renderCards _Left_ _Top_ $
+    (concat . replicate 3 $ map TopicCard [minBound..maxBound])
+        ++
+    (map TopicCard [Mat, Mat, Mat, Art, Art, Art, Art, Eng, Eng])
+}
+        end tell
+    end tell
+end tell
+    |]
+
 
 renderCards :: X -> Y -> [Card] -> [Shape]
 renderCards _  _  []     = []
@@ -111,15 +139,15 @@ renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ maybePageBreak ++ 
 
 -- Constants
 cardWidth, cardHeight, paperWidth :: Float
-cardWidth = 180
-cardHeight = 252
-paperWidth = 500
-paperHeight = 600
+cardWidth = 153
+cardHeight = 255
+paperWidth = 750
+paperHeight = 350
 
 type X = Float
 type Y = Float
 
-data Stroke = StrokeWhite | StrokeBlack | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeNone
+data Stroke = StrokeWhite | StrokeBlack | StrokeParalyzed | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeNone
 data Shadow = ShadowBottom | ShadowMiddle | ShadowNone
 data Placement = PlacementTop | PlacementMiddle
 
@@ -187,6 +215,7 @@ instance ShowQ Fill where
 
 instance ShowQ Stroke where
     showQ StrokeNone = "draws stroke:false,"
+    showQ StrokeParalyzed = "stroke color: {0.2, 0.1, 0.1}, stroke pattern: 3,"
     showQ StrokeDotted = "stroke color: {0.5, 0.5, 0.5}, stroke pattern: 24,"
     showQ StrokeWhite = "stroke color: {1, 1, 1},"
     showQ StrokeBlack = "stroke color: {0, 0, 0},"
@@ -242,20 +271,20 @@ styleIcon A = mkShape
 styleIcon R = mkShape
     { width   = 23
     , height  = 17
-    , left    = 152
+    , left    = 122
     , top     = 10
     , picture = PictureRelative "images/r.png"
     }
 styleIcon K = mkShape
     { width   = 23
     , height  = 33
-    , left    = 152
+    , left    = 122
     , top     = 195
     , picture = PictureRelative "images/k.png"
     }
 styleIcon (Anti (Anti x)) = styleIcon x
 styleIcon (Anti x) = (styleIcon x)
-    { stroke = StrokeDotted
+    { stroke = StrokeParalyzed
     , cornerRadius = 10
     , fill = FillRadial (Color 0.7 0.7 0.7)
     }
@@ -267,7 +296,7 @@ abilityText Unparalyze = mkIconText '✙' 0.7 0.2 0.2 "ArialUnicodeMS"
 
 abilityIcon :: Ability -> Shape
 abilityIcon topic = mkShape
-    { left            = 154
+    { left            = 128
     , top             = 101.5
     , width           = 16
     , height          = 21
@@ -280,13 +309,13 @@ abilityIcon topic = mkShape
     }
 
 topicText :: Topic -> Text
-topicText Art = mkIconText '♪' 0.6 0.4 0.4 "HiraMinProN-W3"
+topicText Art = mkIconText '♪' 0.6 0.4 0.4 "Helvetica"
 topicText Chi = mkIconText '文' 0.4 0.6 0.7 "AR-PL-New-Kai"
-topicText Eng = mkIconText 'a' 0.6 0.6 0.7 "AmericanTypewriter"
+topicText Eng = mkIconText 'A' 0.6 0.6 0.7 "AmericanTypewriter"
 topicText Mat = mkIconText 'π' 0.4 0.5 0.4 "TrajanPro-Regular"
 topicText Nat = mkIconText '☀' 0.5 0.7 0.4 "AR-PL-New-Kai"
-topicText Phy = mkIconText '➶' 0.7 0.7 0.5 "DejaVuSansMono"
-topicText Soc = mkIconText '☮' 0.7 0.5 0.7 "ArialUnicodeMS"
+topicText Phy = mkIconText '➶' 0.6 0.6 0.3 "ZapfDingbatsITC"
+topicText Soc = mkIconText '☯' 0.7 0.5 0.7 "ArialUnicodeMS"
 
 topicIcon :: Topic -> Shape
 topicIcon topic = mkShape
@@ -320,8 +349,8 @@ renderTopic topic n = icon{ top = top + n * (height + 5) }
 renderParalyzed :: Topic -> Float -> Shape
 renderParalyzed topic n = icon
     { top    = top + n * (height + 5)
-    , left   = 154
-    , stroke = StrokeSingle (Color 0.5 0.3 0.3)
+    , left   = 128
+    , stroke = StrokeParalyzed
     , fill   = FillRadialOut (Color 0.7 0.7 0.7)
     }
     where
@@ -329,9 +358,9 @@ renderParalyzed topic n = icon
 
 renderFlavor :: String -> Shape
 renderFlavor flavor = mkShape
-    { left            = 10
+    { left            = 0
     , top             = 233
-    , width           = 160
+    , width           = cardWidth
     , height          = 9
     , text            = mkText
         { txt   = flavor
@@ -354,9 +383,33 @@ mkShape = Shape
     , picture         = PictureNone
     }
 
+renderTopicLarge :: Topic -> Shape
+renderTopicLarge topic = mkShape
+    { left            = 0
+    , top             = 0
+    , width           = cardWidth
+    , height          = cardHeight - 60
+    , cornerRadius    = 0
+    , text            = (topicText topic){ size  = 144 }
+    }
+
+renderTopicLabel :: Topic -> Shape
+renderTopicLabel topic = mkShape
+    { left            = 0
+    , top             = cardHeight - 70
+    , width           = cardWidth
+    , height          = 50
+    , cornerRadius    = 3
+    , text            = mkText
+        { txt   = topicName topic
+        , font  = "cwTeXKai"
+        , size  = 48
+        }
+    }
+
 renderName :: String -> String -> Shape
 renderName name fontName = mkShape
-    { left            = 76
+    { left            = 62
     , top             = 43
     , width           = 28
     , height          = 138
@@ -374,7 +427,7 @@ renderName name fontName = mkShape
 
 renderPower :: String -> Color -> Color -> Shape
 renderPower power strokeColor fillColor = mkShape
-    { left            = 64
+    { left            = 50
     , top             = 200
     , width           = 52
     , height          = 19
@@ -392,9 +445,9 @@ renderPower power strokeColor fillColor = mkShape
 
 renderEffect :: String -> Color -> Color -> Shape
 renderEffect effect strokeColor fillColor = mkShape
-    { left            = 18
+    { left            = 9
     , top             = 197
-    , width           = 144
+    , width           = 134
     , height          = 25
     , stroke          = StrokeSingle strokeColor
     , shadow          = ShadowBottom
@@ -409,9 +462,9 @@ renderEffect effect strokeColor fillColor = mkShape
 
 renderTurns :: Int -> Shape
 renderTurns turns = mkShape
-    { left            = 77
+    { left            = 63
     , top             = 171
-    , width           = 25
+    , width           = 26
     , height          = 16
     , stroke          = StrokeSingle (Color 0.6 0.3 0.3)
     , fill            = FillWhite
@@ -427,6 +480,11 @@ renderTurns turns = mkShape
 _DarkRed_ = Color 0.6 0.3 0.3
 
 renderCard :: Card -> [Shape]
+renderCard TopicCard{..} =
+    [ renderTopicLarge topic
+    , renderTopicLabel topic
+    , outerRect
+    ]
 renderCard Environment{..} =
     [ renderFlavor flavor
     , renderName name "LiGothicMed"
@@ -463,7 +521,7 @@ renderCard Student{..} = topicsShapes ++ paralyzedShapes ++ styleShapes ++
     topicsShapes =
         [ let shape = renderTopic t n in
             if t `elem` paralyzed
-                then shape{ stroke = StrokeSingle (Color 0.5 0.3 0.3) }
+                then shape{ stroke = StrokeParalyzed }
                 else shape
         | t <- topics
         | n <- [((1 - toEnum (length topics)) / 2)..]
@@ -506,7 +564,7 @@ renderCard Assistant{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
         _  -> [ renderTopic t n | t <- topics | n <- [((1 - toEnum (length topics)) / 2)..] ]
 
 innerRect strokeColor fillColor = mkShape
-    { width        = 108
+    { width        = 80
     , height       = 154
     , left         = 36
     , top          = 35
@@ -516,9 +574,9 @@ innerRect strokeColor fillColor = mkShape
     }
 
 outerRect = mkShape
-    { width  = 180
-    , height = 252
-    , stroke = StrokeBlack
+    { width  = cardWidth
+    , height = cardHeight
+    , stroke = StrokeWhite
     , cornerRadius = 15
     }
 
