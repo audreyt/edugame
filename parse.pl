@@ -64,7 +64,7 @@ my $students = parse {
 
 my $lessons = parse {
     my ($name, $styles, $power, $topics, $abilities, $flavor) = @_;
-    $styles = join ',', sort split(//, $styles);
+    $styles = join ',', map {/[a-z]/ ? "Anti ".uc($_) : $_ } sort split(//, $styles);
 
     my ($p, $t) = split(/\//, $power);
     $t ||= $p;
@@ -84,7 +84,7 @@ my $lessons = parse {
 
 my $assistants = parse {
     my ($name, $styles, $topics, $abilities, $cost, $flavor) = @_;
-    $styles = join ',', sort split(//, $styles);
+    $styles = join ',', map {/[a-z]/ ? "Anti ".uc($_) : $_ } sort split(//, $styles);
 
     $flavor = splitWords($flavor);
     $topics = join ',', sort split(//, lc $topics);
