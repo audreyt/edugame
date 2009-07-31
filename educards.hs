@@ -86,10 +86,10 @@ say = UTF8.putStrLn
 instance ShowQ [Shape] where
     showQ = concatMap showQ
 
-_Left_ = 23
-_Top_ = 23
+_Left_ = 5
+_Top_ = 5
 
-main2 = do
+main = do
     say [$qq|
 
 tell application "OmniGraffle Professional 5"
@@ -103,23 +103,7 @@ tell application "OmniGraffle Professional 5"
 end tell
     |]
 
-main = do
-    say [$qq|
-
-tell application "OmniGraffle Professional 5"
-    tell document of front window
-        set count_canvas to count of canvases
-        set canvas_no to count_canvas
-        tell canvas canvas_no
-{ renderCards _Left_ _Top_ $
-    (concat . replicate 3 $ map TopicCard [minBound..maxBound])
-        ++
-    (map TopicCard [Mat, Mat, Mat, Art, Art, Art, Art, Eng, Eng])
-}
-        end tell
-    end tell
-end tell
-    |]
+-- (concat . replicate 3 $ map TopicCard [minBound..maxBound])
 
 
 renderCards :: X -> Y -> [Card] -> [Shape]
@@ -139,10 +123,10 @@ renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ maybePageBreak ++ 
 
 -- Constants
 cardWidth, cardHeight, paperWidth :: Float
-cardWidth = 153
-cardHeight = 255
-paperWidth = 750
-paperHeight = 350
+cardWidth = 180
+cardHeight = 252
+paperWidth = 500
+paperHeight = 600
 
 type X = Float
 type Y = Float
@@ -215,7 +199,7 @@ instance ShowQ Fill where
 
 instance ShowQ Stroke where
     showQ StrokeNone = "draws stroke:false,"
-    showQ StrokeParalyzed = "stroke color: {0.2, 0.1, 0.1}, stroke pattern: 3,"
+    showQ StrokeParalyzed = "stroke color: {0.5, 0.2, 0.2}, stroke pattern: 3,"
     showQ StrokeDotted = "stroke color: {0.5, 0.5, 0.5}, stroke pattern: 24,"
     showQ StrokeWhite = "stroke color: {1, 1, 1},"
     showQ StrokeBlack = "stroke color: {0, 0, 0},"
@@ -271,14 +255,14 @@ styleIcon A = mkShape
 styleIcon R = mkShape
     { width   = 23
     , height  = 17
-    , left    = 122
+    , left    = 152
     , top     = 10
     , picture = PictureRelative "images/r.png"
     }
 styleIcon K = mkShape
     { width   = 23
     , height  = 33
-    , left    = 122
+    , left    = 152
     , top     = 195
     , picture = PictureRelative "images/k.png"
     }
@@ -296,7 +280,7 @@ abilityText Unparalyze = mkIconText '✙' 0.7 0.2 0.2 "ArialUnicodeMS"
 
 abilityIcon :: Ability -> Shape
 abilityIcon topic = mkShape
-    { left            = 128
+    { left            = 154
     , top             = 101.5
     , width           = 16
     , height          = 21
@@ -349,7 +333,7 @@ renderTopic topic n = icon{ top = top + n * (height + 5) }
 renderParalyzed :: Topic -> Float -> Shape
 renderParalyzed topic n = icon
     { top    = top + n * (height + 5)
-    , left   = 128
+    , left   = 154
     , stroke = StrokeParalyzed
     , fill   = FillRadialOut (Color 0.7 0.7 0.7)
     }
@@ -358,9 +342,9 @@ renderParalyzed topic n = icon
 
 renderFlavor :: String -> Shape
 renderFlavor flavor = mkShape
-    { left            = 0
+    { left            = 10
     , top             = 233
-    , width           = cardWidth
+    , width           = 160
     , height          = 9
     , text            = mkText
         { txt   = flavor
@@ -409,7 +393,7 @@ renderTopicLabel topic = mkShape
 
 renderName :: String -> String -> Shape
 renderName name fontName = mkShape
-    { left            = 62
+    { left            = 76
     , top             = 43
     , width           = 28
     , height          = 138
@@ -427,7 +411,7 @@ renderName name fontName = mkShape
 
 renderPower :: String -> Color -> Color -> Shape
 renderPower power strokeColor fillColor = mkShape
-    { left            = 50
+    { left            = 64
     , top             = 200
     , width           = 52
     , height          = 19
@@ -445,9 +429,9 @@ renderPower power strokeColor fillColor = mkShape
 
 renderEffect :: String -> Color -> Color -> Shape
 renderEffect effect strokeColor fillColor = mkShape
-    { left            = 9
+    { left            = 18
     , top             = 197
-    , width           = 134
+    , width           = 144
     , height          = 25
     , stroke          = StrokeSingle strokeColor
     , shadow          = ShadowBottom
@@ -462,9 +446,9 @@ renderEffect effect strokeColor fillColor = mkShape
 
 renderTurns :: Int -> Shape
 renderTurns turns = mkShape
-    { left            = 63
+    { left            = 77
     , top             = 171
-    , width           = 26
+    , width           = 25
     , height          = 16
     , stroke          = StrokeSingle (Color 0.6 0.3 0.3)
     , fill            = FillWhite
@@ -564,7 +548,7 @@ renderCard Assistant{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
         _  -> [ renderTopic t n | t <- topics | n <- [((1 - toEnum (length topics)) / 2)..] ]
 
 innerRect strokeColor fillColor = mkShape
-    { width        = 80
+    { width        = 108
     , height       = 154
     , left         = 36
     , top          = 35
@@ -576,7 +560,7 @@ innerRect strokeColor fillColor = mkShape
 outerRect = mkShape
     { width  = cardWidth
     , height = cardHeight
-    , stroke = StrokeWhite
+    , stroke = StrokeBlack
     , cornerRadius = 15
     }
 
