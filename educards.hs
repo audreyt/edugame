@@ -186,7 +186,7 @@ $picture
         _size   = [$qq|size: \{$width, $height}, |]
         _origin = [$qq|origin: \{$left, $top}, |]
 
-data Fill = FillWhite | FillLinear Color | FillRadial Color | FillRadialOut Color | FillColor Color | FillNone
+data Fill = FillWhite | FillLinear Color | FillRadial Color | FillRadialOut Color | FillColor Color | FillParalyzed | FillNone
 
 instance ShowQ Fill where
     showQ FillWhite = ""
@@ -194,6 +194,7 @@ instance ShowQ Fill where
     showQ (FillRadial color) = [$qq|fill $color gradient color:\{0.95, 0.95, 0.95}, fill: radial fill,|]
     showQ (FillRadialOut color) = [$qq|gradient $color fill: radial fill,|]
     showQ (FillColor color) = [$qq|fill $color|]
+    showQ FillParalyzed = showQ $ FillRadialOut (Color 0.7 0.7 0.7)
     showQ FillNone = "fill: no fill,"
 
 
@@ -270,7 +271,7 @@ styleIcon (Anti (Anti x)) = styleIcon x
 styleIcon (Anti x) = (styleIcon x)
     { stroke = StrokeParalyzed
     , cornerRadius = 10
-    , fill = FillRadial (Color 0.7 0.7 0.7)
+    , fill = FillParalyzed
     }
 
 abilityText :: Ability -> Text
@@ -335,7 +336,7 @@ renderParalyzed topic n = icon
     { top    = top + n * (height + 5)
     , left   = 154
     , stroke = StrokeParalyzed
-    , fill   = FillRadialOut (Color 0.7 0.7 0.7)
+    , fill   = FillParalyzed
     }
     where
     icon@Shape{..} = topicIcon topic
@@ -505,7 +506,7 @@ renderCard Student{..} = topicsShapes ++ paralyzedShapes ++ styleShapes ++
     topicsShapes =
         [ let shape = renderTopic t n in
             if t `elem` paralyzed
-                then shape{ stroke = StrokeParalyzed }
+                then shape{ stroke = StrokeParalyzed, fill = FillParalyzed }
                 else shape
         | t <- topics
         | n <- [((1 - toEnum (length topics)) / 2)..]
