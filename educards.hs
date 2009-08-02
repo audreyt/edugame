@@ -86,8 +86,8 @@ say = UTF8.putStrLn
 instance ShowQ [Shape] where
     showQ = concatMap showQ
 
-_Left_ = 5
-_Top_ = 5
+_Left_ = 9.6
+_Top_ = 13.65
 
 main = do
     say [$qq|
@@ -103,7 +103,7 @@ tell application "OmniGraffle Professional 5"
 end tell
     |]
 
--- (concat . replicate 3 $ map TopicCard [minBound..maxBound])
+-- { renderCards _Left_ _Top_ $ concatMap (replicate 6 . TopicCard) [minBound..maxBound]}
 
 
 renderCards :: X -> Y -> [Card] -> [Shape]
@@ -133,10 +133,11 @@ type Y = Float
 
 data Stroke = StrokeWhite | StrokeBlack | StrokeParalyzed | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeNone
 data Shadow = ShadowBottom | ShadowMiddle | ShadowNone
-data Placement = PlacementTop | PlacementMiddle
+data Placement = PlacementTop | PlacementMiddle | PlacementBottom
 
 instance ShowQ Placement where
     showQ PlacementTop = "text placement: top,"
+    showQ PlacementBottom = "text placement: bottom,"
     showQ _ = ""
 
 data Text   = Text
@@ -236,6 +237,7 @@ mkIconText ch r g b f = mkText
     { txt   = [ch]
     , color = Color r g b
     , font  = f
+    , size  = 14
     }
 
 styleIcon :: Style -> Shape
@@ -269,9 +271,9 @@ styleIcon K = mkShape
     }
 styleIcon (Anti (Anti x)) = styleIcon x
 styleIcon (Anti x) = (styleIcon x)
-    { stroke = StrokeParalyzed
-    , cornerRadius = 10
-    , fill = FillParalyzed
+    { stroke       = StrokeParalyzed
+    , cornerRadius = 5
+    , fill         = FillParalyzed
     }
 
 abilityText :: Ability -> Text
@@ -351,6 +353,7 @@ renderFlavor flavor = mkShape
         { txt   = flavor
         , font  = "AR-PL-New-Kai"
         , size  = 8
+        , color = Color 0.1 0.1 0.1
         }
     }
 
@@ -422,17 +425,18 @@ renderPower power strokeColor fillColor = mkShape
     , fill            = FillColor fillColor
     , shadow          = ShadowBottom
     , text            = mkText
-        { txt   = power
-        , font  = "DroidSerif"
-        , size  = 10
+        { txt       = power
+        , font      = "DroidSerif"
+        , size      = 14
+        , placement = PlacementBottom
         }
     }
 
 renderEffect :: String -> Color -> Color -> Shape
 renderEffect effect strokeColor fillColor = mkShape
-    { left            = 18
+    { left            = 8
     , top             = 197
-    , width           = 144
+    , width           = 164
     , height          = 25
     , stroke          = StrokeSingle strokeColor
     , shadow          = ShadowBottom
@@ -441,7 +445,7 @@ renderEffect effect strokeColor fillColor = mkShape
     , text            = mkText
         { txt   = effect
         , font  = "LiGothicMed"
-        , size  = 8
+        , size  = 10
         }
     }
 
@@ -534,7 +538,9 @@ renderCard Lesson{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
 renderCard Assistant{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
     [ renderFlavor flavor
     , renderName name "cwTeXHeiBold"
-    , renderPower (show (negate cost)) (Color 0.3 0.3 0.5) (Color 0.9 0.9 1)
+    , (renderPower (show (negate cost)) (Color 0.3 0.3 0.5) (Color 0.9 0.9 1))
+        { cornerRadius = 3
+        }
     , (innerRect undefined undefined)
         { fill = FillRadialOut (Color 0.5 0.5 0.6)
         , stroke = StrokeDoubleDotted (Color 0.3 0.3 0.5)
@@ -559,9 +565,11 @@ innerRect strokeColor fillColor = mkShape
     }
 
 outerRect = mkShape
-    { width  = cardWidth
-    , height = cardHeight
-    , stroke = StrokeBlack
+    { width        = cardWidth - 1
+    , height       = cardHeight - 1
+    , top          = 0.5
+    , left         = 0.5
+    , stroke       = StrokeBlack
     , cornerRadius = 15
     }
 
