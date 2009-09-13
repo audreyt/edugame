@@ -527,7 +527,7 @@ renderCard Lesson{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
     interested' = maybeNil interested
     uninterested' = maybeNil uninterested
     maybeNil n = case n of
-        0 -> "✘"
+        100 -> "✘"
         _ -> show n
     styleShapes = map styleIcon styles
     abilityShapes = [ renderAbility t n | t <- abilities | n <- [((1 - toEnum (length abilities)) / 2)..] ]

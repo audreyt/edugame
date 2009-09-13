@@ -48,8 +48,8 @@ my $students = parse {
 
     my ($p, $t) = split(/\//, $power);
     $t ||= $p;
-    $p = 0 if $p eq 'x';
-    $t = 0 if $t eq 'x';
+    $p = 100 if $p eq 'x';
+    $t = 100 if $t eq 'x';
     $topics = '' if $topics eq '*';
 
     $flavor = splitWords($flavor);
@@ -67,9 +67,9 @@ my $lessons = parse {
     $styles = join ',', map {/[a-z]/ ? "Anti ".uc($_) : $_ } sort split(//, $styles);
 
     my ($p, $t) = split(/\//, $power);
-    $t ||= $p;
-    $p = 0 if $p eq 'x';
-    $t = 0 if $t eq 'x';
+    $t ||= $p if $t ne '0';
+    $p = 100 if $p eq 'x';
+    $t = 100 if $t eq 'x';
     $topics = '' if $topics eq '*';
 
     $flavor = splitWords($flavor);
