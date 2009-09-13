@@ -420,15 +420,14 @@ renderPower power strokeColor fillColor = mkShape
     , width           = 52
     , height          = 19
     , cornerRadius    = 20
-    , verticalPadding = 2
     , stroke          = StrokeSingle strokeColor
     , fill            = FillColor fillColor
     , shadow          = ShadowBottom
     , text            = mkText
         { txt       = power
-        , font      = "DroidSerif"
+        , font      = "DroidSans"
         , size      = 14
-        , placement = PlacementBottom
+        , placement = PlacementMiddle
         }
     }
 
