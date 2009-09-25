@@ -97,13 +97,12 @@ tell application "OmniGraffle Professional 5"
         set count_canvas to count of canvases
         set canvas_no to count_canvas
         tell canvas canvas_no
-{ renderCards _Left_ _Top_ allCards }
+{ renderCards _Left_ _Top_ $ concatMap (replicate 6 . TopicCard) [minBound..maxBound]}
         end tell
     end tell
 end tell
     |]
 
--- { renderCards _Left_ _Top_ $ concatMap (replicate 6 . TopicCard) [minBound..maxBound]}
 
 
 renderCards :: X -> Y -> [Card] -> [Shape]
