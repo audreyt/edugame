@@ -77,6 +77,10 @@ data Card
         , flavor            :: String       -- 斜體字
         }
     | TopicCard { topic :: Topic }
+    | RuleCard1
+    | RuleCard2
+    | FaceCard { cardColor :: Color }
+    | EmptyStudent
     deriving Show
 
 --------------------------
@@ -97,19 +101,32 @@ tell application "OmniGraffle Professional 5"
         set count_canvas to count of canvases
         set canvas_no to count_canvas
         tell canvas canvas_no
-{ renderCards _Left_ _Top_ $ concatMap (replicate 6 . TopicCard) [minBound..maxBound]}
+{ renderCards _Left_ _Top_ (concat $ replicate 3 (students ++ [EmptyStudent])) }
         end tell
     end tell
 end tell
     |]
 
+-- { renderCards _Left_ _Top_ sheet1Cards }
+faceColors :: [Color]
+faceColors =
+    [ Color 1 1 0.75
+    , Color 1 0.75 1
+    , Color 1 1 1
+    , Color 1 0.75 0.75
+    , Color 0.75 0.75 1
+    , Color 0.75 1 0.75
+    ]
 
+sheet1Cards = topicCards ++ playerCards
+topicCards = concatMap (replicate 9 . TopicCard) [minBound..maxBound] 
+playerCards = concat [ [RuleCard1, RuleCard2, FaceCard c] | c <- faceColors ]
 
 renderCards :: X -> Y -> [Card] -> [Shape]
 renderCards _  _  []     = []
 renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ maybePageBreak ++ renderCards xo' yo' cs
     where
-    adjustOffset s@Shape{..} = s{ left = left + xo, top = top + yo }
+    adjustOffset s = s{ left = left s + xo, top = top s + yo }
     (xo', yo', maybePageBreak)
         | moveRight <- xo + cardWidth
         , moveRight < paperWidth
@@ -124,13 +141,13 @@ renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ maybePageBreak ++ 
 cardWidth, cardHeight, paperWidth :: Float
 cardWidth = 180
 cardHeight = 252
-paperWidth = 500
-paperHeight = 600
+paperWidth = 1600
+paperHeight = 2300
 
 type X = Float
 type Y = Float
 
-data Stroke = StrokeWhite | StrokeBlack | StrokeParalyzed | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeNone
+data Stroke = StrokeWhite | StrokeBlack | StrokeBlackThick | StrokeParalyzed | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeNone
 data Shadow = ShadowBottom | ShadowMiddle | ShadowNone
 data Placement = PlacementTop | PlacementMiddle | PlacementBottom
 
@@ -167,24 +184,50 @@ data Shape = Shape
     , shadow          :: Shadow
     , text            :: Text
     , picture         :: Picture
-    } | PageBreak
+    } | PageBreak | RuleShape1 { left :: X, top :: Y } | RuleShape2 { left :: X, top :: Y } | FaceShape { left :: X, top :: Y, shapeColor :: Color }
 
 instance ShowQ Shape where
-    showQ PageBreak = [$q|
-        end tell
-        make new canvas
-        set count_canvas to count of canvases
-        set canvas_no to count_canvas
-        tell canvas canvas_no
-    |]
-    showQ Shape{..} = [$qq|$_begin $stroke $shadow $text $fill $_origin $_size $_end
-$picture
+    showQ shape = case shape of
+        RuleShape1{..} -> [$qq|$_begin $_origin size: \{ $cardWidth, $cardHeight } $_rule1
 |]
+        RuleShape2{..} -> [$qq|$_begin $_origin size: \{ $cardWidth, $cardHeight } $_rule2
+|]
+        FaceShape{..} -> [$qq|make new line at end of graphics with properties \{stroke color: \{0.5, 0.2, 0.2}, line type: bezier, thickness: 18, bezier point list: \{\{{left+27.25}, {top+176.35}}, \{{left+27.25}, {top+176.35}}, \{{left+49.25}, {top+190}}, \{{left+92.25}, {top+190}}, \{{left+135.25}, {top+190}}, \{{left+154.75}, {top+176}}, \{{left+154.75}, {top+176}}}}
+            make new shape at end of graphics with properties \{draws shadow: false, corner radius: 5, size: \{147., 19}, origin: \{{left + 17.5}, {top + 20.5}}, fill color: \{0.5, 0.5, 0.5}, gradient color: \{0.5, 0.2, 0.2}, draws stroke: false}
+            make new shape at end of graphics with properties \{draws shadow: false, corner radius: 5, size: \{58.8, 19}, origin: \{{left + 105.7}, {top + 211.4}}, fill color: \{0.5, 0.5, 0.5}, gradient color: \{0.5, 0.2, 0.2}, draws stroke: false}
+            make new shape at end of graphics with properties \{draws shadow: false, corner radius: 5, size: \{58.8, 19}, origin: \{{left + 17.5}, {top + 211.4}}, fill color: \{0.5, 0.5, 0.5}, gradient color: \{0.5, 0.2, 0.2}, draws stroke: false}
+            make new shape at end of graphics with properties \{draws shadow: false, corner radius: 5, size: \{58.8, 19}, origin: \{{left + 17.5}, {top + 135}}, fill color: \{0.5, 0.5, 0.5}, gradient color: \{0.5, 0.2, 0.2}, draws stroke: false}
+            make new shape at end of graphics with properties \{draws shadow: false, corner radius: 5, size: \{58.8, 19}, origin: \{{left + 105.7}, {top + 135}}, fill color: \{0.5, 0.5, 0.5}, gradient color: \{0.5, 0.2, 0.2}, draws stroke: false}
+            make new shape at end of graphics with properties \{draws shadow: false, corner radius: 5, size: \{58.8, 19}, origin: \{{left + 105.7}, {top + 97}}, fill color: \{0.5, 0.5, 0.5}, gradient color: \{0.5, 0.2, 0.2}, draws stroke: false}
+            make new shape at end of graphics with properties \{draws shadow: false, corner radius: 5, size: \{58.8, 19}, origin: \{{left + 17.5}, {top + 97}}, fill color: \{0.5, 0.5, 0.5}, gradient color: \{0.5, 0.2, 0.2}, draws stroke: false}
+            make new shape at end of graphics with properties \{draws shadow: false, corner radius: 5, size: \{58.8, 19}, origin: \{{left + 105.7}, {top + 58.5}}, fill color: \{0.2, 0.2, 0.7}, gradient color: \{0.5, 0.2, 0.2}, draws stroke: false}
+            make new shape at end of graphics with properties \{draws shadow: false, corner radius: 5, size: \{58.8, 19}, origin: \{{left + 17.5}, {top + 58.5}}, fill color: \{0.2, 0.2, 0.7}, gradient color: \{0.5, 0.2, 0.2}, draws stroke: false}
+        |] ++ [$qq|
+            $_begin $_origin size: \{ $cardWidth, $cardHeight }, fill: linear fill, draws shadow: false, corner radius: 15, side padding: 0, gradient $shapeColor vertical padding: 0}
+        |]
+        Shape{..} -> let {
+            _size   = [$qq|size: \{$width, $height}, |];
+            _end    = [$qq|corner radius: $cornerRadius, vertical padding: $verticalPadding, side padding: 0 }|]
+        } in [$qq|$_begin $stroke $shadow $text $fill $_origin $_size $_end
+$picture |]
+        PageBreak  -> [$q|
+            end tell
+            make new canvas
+            set count_canvas to count of canvases
+            set canvas_no to count_canvas
+            tell canvas canvas_no
+        |]
         where
+        _rule1 = [$q|, fill: linear fill, gradient color: {0.9,0.9,0.9}, draws shadow: false, corner radius: 15, side padding: 15, vertical padding: 0, text: {{text: "回合：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande"}, {text: "➩", font: "ZapfDingbatsITC"}, {text: " 抽 1 張牌", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "➩  ", font: "ZapfDingbatsITC"}, {text: "2 次行動", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "➩  ", font: "ZapfDingbatsITC"}, {text: "手牌多於 4 張則棄牌
+
+", font: "MicrosoftJhengHeiRegular"}, {text: "行動：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande"}, {text: "• 1 動：抽 1 張牌", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 1 動：換任意張牌", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 1 動：出教學卡", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "  (需擲親和骰 3 以上)", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 1 動：出助教卡", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 2 動：出環境卡", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 2 動：出技藝卡", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "  (若已有技藝卡, 則需棄牌)", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• ? 動：出特殊卡", font: "MicrosoftJhengHeiRegular"}}}|]
+        _rule2 = [$q|, fill: linear fill, gradient color: {0.9,0.9,0.9}, draws shadow: false, corner radius: 15, side padding: 15, vertical padding: 0, text: {{text: "教學失效因素：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande"}, {text: "• 麻痺未解", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 無一風格相符", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 任一風格碰到障礙", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 修正後力道 0 以下
+
+", font: "MicrosoftJhengHeiRegular"}, {text: "力道修正因素：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande-Bold"}, {text: "• 啟動助教：減值累計", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 風格覆蓋：+2
+
+", font: "MicrosoftJhengHeiRegular"}, {text: "計分：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande-Bold"}, {text: "• 失敗：出無效教學者 -1", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 成功：+2 / +1", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 特別成功：+4 / +2", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 解麻痺獎分： +1", font: "MicrosoftJhengHeiRegular"}}}|]
         _begin = "make new shape at end of graphics with properties {"
-        _end   = [$qq|corner radius: $cornerRadius, vertical padding: $verticalPadding, side padding: 0 }|]
-        _size   = [$qq|size: \{$width, $height}, |]
-        _origin = [$qq|origin: \{$left, $top}, |]
+        _origin = [$qq|origin: \{{ left shape }, { top shape }}, |];
 
 data Fill = FillWhite | FillLinear Color | FillRadial Color | FillRadialOut Color | FillColor Color | FillParalyzed | FillNone
 
@@ -204,6 +247,7 @@ instance ShowQ Stroke where
     showQ StrokeDotted = "stroke color: {0.5, 0.5, 0.5}, stroke pattern: 24,"
     showQ StrokeWhite = "stroke color: {1, 1, 1},"
     showQ StrokeBlack = "stroke color: {0, 0, 0},"
+    showQ StrokeBlackThick = "stroke color: {0, 0, 0}, thickness: 10,"
     showQ (StrokeDouble color) = [$qq|stroke $color thickness:5, double stroke:true,|]
     showQ (StrokeSingle color) = [$qq|stroke $color|]
     showQ (StrokeDoubleDotted color) = [$qq|stroke $color thickness:5, double stroke:true, stroke pattern: 24, |]
@@ -224,10 +268,11 @@ instance ShowQ Text where
 data Picture = PictureRelative FilePath | PictureNone
 
 instance ShowQ Picture where
-    showQ (PictureRelative path) = '\n':[$qq|set image of result to "$__Bin__/$path"|]
+    showQ (PictureRelative path) = '\n':[$qq|set image of result to "$__Bin__/$path"
+|]
     showQ PictureNone = ""
 
-data Color = Color { red :: Float, green :: Float, blue :: Float }
+data Color = Color { red :: Float, green :: Float, blue :: Float } deriving Show
 
 instance ShowQ Color where
     showQ Color{..} = [$qq|color: \{$red, $green, $blue}, |]
@@ -424,7 +469,7 @@ renderPower power strokeColor fillColor = mkShape
     , shadow          = ShadowBottom
     , text            = mkText
         { txt       = power
-        , font      = "DroidSans"
+        , font      = "Helvetica"
         , size      = 14
         , placement = PlacementMiddle
         }
@@ -467,6 +512,14 @@ renderTurns turns = mkShape
 _DarkRed_ = Color 0.6 0.3 0.3
 
 renderCard :: Card -> [Shape]
+renderCard EmptyStudent =
+    [ renderPower "/" (Color 0.5 0.25 0) (Color 1 0.95 0.9)
+    , innerRect (Color 0.5 0.25 0) (Color 0.9 0.85 0.8)
+    , outerRect
+    ]
+renderCard RuleCard1 = [ RuleShape1 0 0 ]
+renderCard RuleCard2 = [ RuleShape2 0 0 ]
+renderCard FaceCard{..} = [ FaceShape 0 0 cardColor ]
 renderCard TopicCard{..} =
     [ renderTopicLarge topic
     , renderTopicLabel topic
@@ -574,3 +627,5 @@ outerRect = mkShape
 allCards = concat [ students, lessons, actions, skills, environments, assistants ]
 
 #include "data.hs"
+
+
