@@ -38,7 +38,8 @@ u = Unparalyze ; i = Inspire ; l = Look
 
 data Card
     = Student -- 學生
-        { name              :: String       -- 名稱
+        { serial            :: Int          -- 序號
+        , name              :: String       -- 名稱
         , styles            :: [Style]      -- 學習風格
         , interested        :: Int          -- 蒙昧值(有興趣時)
         , uninterested      :: Int          -- 蒙昧值(無興趣時)
@@ -47,7 +48,8 @@ data Card
         , flavor            :: String       -- 斜體字
         }
     | Lesson -- 教學
-        { name              :: String       -- 名稱
+        { serial            :: Int          -- 序號
+        , name              :: String       -- 名稱
         , styles            :: [Style]      -- 學習風格
         , interested        :: Int          -- 成就點數(有興趣時)
         , uninterested      :: Int          -- 成就點數(無興趣時)
@@ -56,23 +58,27 @@ data Card
         , flavor            :: String       -- 斜體字
         }
     | Action -- 行動
-        { name              :: String       -- 名稱
+        { serial            :: Int          -- 序號
+        , name              :: String       -- 名稱
         , turns             :: Int          -- 所需回合
         , effect            :: String       -- 效果
         , flavor            :: String       -- 斜體字
         }
     | Skill -- 技藝
-        { name              :: String       -- 名稱
+        { serial            :: Int          -- 序號
+        , name              :: String       -- 名稱
         , effect            :: String       -- 效果
         , flavor            :: String       -- 斜體字
         }
     | Environment -- 環境
-        { name              :: String       -- 名稱
+        { serial            :: Int          -- 序號
+        , name              :: String       -- 名稱
         , effect            :: String       -- 效果
         , flavor            :: String       -- 斜體字
         }
     | Assistant -- 助教
-        { name              :: String       -- 名稱
+        { serial            :: Int          -- 序號
+        , name              :: String       -- 名稱
         , styles            :: [Style]      -- 額外風格
         , topics            :: [Topic]      -- 解麻痺學科
         , abilities         :: [Ability]    -- 特殊能力
@@ -190,10 +196,11 @@ data Shape = Shape
     , shadow          :: Shadow
     , text            :: Text
     , picture         :: Picture
-    } | PageBreak | RuleShape1 { left :: X, top :: Y } | RuleShape2 { left :: X, top :: Y } | FaceShape { left :: X, top :: Y, shapeColor :: Color }
+    } | PageBreak | RuleShape1 { left :: X, top :: Y } | RuleShape2 { left :: X, top :: Y } | FaceShape { left :: X, top :: Y, shapeColor :: Color } | SerialShape { left :: X, top :: Y, serialColor :: Color, serialNumber :: Int } | Power { left :: X, top :: Y, strength :: Maybe Int, isTopic :: Boolean }
 
 instance ShowQ Shape where
     showQ shape = case shape of
+        SerialShape{..} -> "make new shape at end of graphics with properties {textPosition: {0, 0.25}, text placement: bottom, draws shadow: false, corner radius: 2, size: {21, 17}, side padding: 1, flipped vertically: true, stroke " ++ showQ serialColor ++ "name: \"HorizontalTriangle\", vertical padding: 0, origin: {" ++ show (left + 160) ++ ", " ++ show (top + 232) ++ "}, fill color: {0, 0, 0}, textSize: {0.875, 0.5}, text: {text: \"" ++ (if serialNumber < 10 then " " else "") ++ show serialNumber ++ "\", font: \"AmericanTypewriter-Condensed\", size: 9, color: {1, 1, 1}}, gradient color: {0.25, 0.25, 0.25}}"
         RuleShape1{..} -> [$qq|$_begin $_origin size: \{ $cardWidth, $cardHeight } $_rule1
 |]
         RuleShape2{..} -> [$qq|$_begin $_origin size: \{ $cardWidth, $cardHeight } $_rule2
@@ -515,12 +522,21 @@ renderTurns turns = mkShape
         }
     }
 
+renderSerial :: Color -> Int -> Shape
+renderSerial = SerialShape 0 0
+
 _DarkRed_ = Color 0.6 0.3 0.3
+_Brown_ = Color 0.5 0.25 0
+_LightGreen_ = Color 0.9 1 0.9
+_Green_ = Color 0.1 0.6 0.1
+_Blue_ = Color 0.3 0.3 0.5
+_GrayBlue_ = Color 0.5 0.5 0.6
 
 renderCard :: Card -> [Shape]
 renderCard EmptyStudent =
-    [ renderPower "/" (Color 0.5 0.25 0) (Color 1 0.95 0.9)
-    , innerRect (Color 0.5 0.25 0) (Color 0.9 0.85 0.8)
+    [ renderPower "/" _Brown_ (Color 1 0.95 0.9)
+    , renderSerial _Brown_ 0
+    , innerRect _Brown_ (Color 0.9 0.85 0.8)
     , outerRect
     ]
 renderCard RuleCard1 = [ RuleShape1 0 0 ]
@@ -534,7 +550,8 @@ renderCard TopicCard{..} =
 renderCard Environment{..} =
     [ renderFlavor flavor
     , renderName name "LiGothicMed"
-    , (renderEffect effect (Color 0.1 0.6 0.1) (Color 0.9 1 0.9)){ stroke = StrokeDotted }
+    , (renderEffect effect (Color 0.1 0.6 0.1) _LightGreen_){ stroke = StrokeDotted }
+    , renderSerial _LightGreen_ serial
     , outerRect{ fill = FillRadialOut (Color 0.5 0.7 0.4) }
     ]
 renderCard Action{..} =
@@ -542,22 +559,25 @@ renderCard Action{..} =
     , renderName name "LiGothicMed"
     , renderTurns turns
     , renderEffect effect _DarkRed_ (Color 1 0.9 0.9)
+    , renderSerial _DarkRed_ serial
     , innerRect _DarkRed_ (Color 0.6 0.5 0.5)
     , outerRect
     ]
 renderCard Skill{..} =
     [ renderFlavor flavor
     , renderName name "LiGothicMed"
-    , renderEffect effect (Color 0.1 0.6 0.1) (Color 0.9 1 0.9)
-    , innerRect (Color 0.1 0.6 0.1) (Color 0.5 0.6 0.4)
+    , renderEffect effect _Green_ (Color 0.9 1 0.9)
+    , renderSerial _Green_ serial
+    , innerRect _Green_ (Color 0.5 0.6 0.4)
     , outerRect
     ]
 
 renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
     [ renderFlavor flavor
     , renderName name "cwTeXYen"
-    , renderPower [$qq|$interested / $uninterested|] (Color 0.5 0.25 0) (Color 1 0.95 0.9)
-    , innerRect (Color 0.5 0.25 0) (Color 0.9 0.85 0.8)
+    , renderPower [$qq|$interested / $uninterested|] _Brown_ (Color 1 0.95 0.9)
+    , renderSerial _Brown_ serial
+    , innerRect _Brown_ (Color 0.9 0.85 0.8)
     , outerRect
     ]
     where
@@ -582,8 +602,9 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
 renderCard Lesson{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
     [ renderFlavor flavor
     , renderName name "cwTeXHeiBold"
-    , renderPower power (Color 0.3 0.3 0.5) (Color 0.9 0.9 1)
-    , innerRect (Color 0.3 0.3 0.5) (Color 0.5 0.5 0.6)
+    , renderPower power _Blue_ (Color 0.9 0.9 1)
+    , renderSerial _Blue_ serial
+    , innerRect _Blue_ _GrayBlue_
     , outerRect
     ]
     where
@@ -602,12 +623,13 @@ renderCard Lesson{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
 renderCard Assistant{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
     [ renderFlavor flavor
     , renderName name "cwTeXHeiBold"
-    , (renderPower (show (negate cost)) (Color 0.3 0.3 0.5) (Color 0.9 0.9 1))
+    , (renderPower (show (negate cost)) _Blue_ (Color 0.9 0.9 1))
         { cornerRadius = 3
         }
+    , renderSerial _GrayBlue_ serial
     , (innerRect undefined undefined)
-        { fill = FillRadialOut (Color 0.5 0.5 0.6)
-        , stroke = StrokeDoubleDotted (Color 0.3 0.3 0.5)
+        { fill = FillRadialOut _GrayBlue_
+        , stroke = StrokeDoubleDotted _Blue_
         }
     , outerRect
     ]
