@@ -4,6 +4,9 @@ import System.Environment.FindBin
 import qualified System.IO.UTF8 as UTF8
 import Text.InterpolatedString.Perl6
 
+rules = [ RuleCard1, RuleCard2 ]
+_Cards_ = map head [ rules, students, lessons, actions, skills, environments ]
+
 -- 「學習風格」：在牌的四角，有VARK四種：V代表視覺型、A代表聽覺型、R代表閱讀型、K代表操作型。
 data Style = V | A | R | K | Anti Style deriving Show
 
@@ -101,12 +104,13 @@ tell application "OmniGraffle Professional 5"
         set count_canvas to count of canvases
         set canvas_no to count_canvas
         tell canvas canvas_no
-{ renderCards _Left_ _Top_ (concat $ replicate 3 (students ++ [EmptyStudent])) }
+{ renderCards _Left_ _Top_ _Cards_ }
         end tell
     end tell
 end tell
     |]
 
+-- { renderCards _Left_ _Top_ (concat $ replicate 3 (students ++ [EmptyStudent])) }
 -- { renderCards _Left_ _Top_ sheet1Cards }
 faceColors :: [Color]
 faceColors =
@@ -141,8 +145,10 @@ renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ maybePageBreak ++ 
 cardWidth, cardHeight, paperWidth :: Float
 cardWidth = 180
 cardHeight = 252
-paperWidth = 1600
-paperHeight = 2300
+-- paperWidth = 1600
+-- paperHeight = 2300
+paperWidth = 540
+paperHeight = 800
 
 type X = Float
 type Y = Float
@@ -221,15 +227,15 @@ $picture |]
         _rule1 = [$q|, fill: linear fill, gradient color: {0.9,0.9,0.9}, draws shadow: false, corner radius: 15, side padding: 15, vertical padding: 0, text: {{text: "回合：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande"}, {text: "➩", font: "ZapfDingbatsITC"}, {text: " 抽 1 張牌", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "➩  ", font: "ZapfDingbatsITC"}, {text: "2 次行動", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "➩  ", font: "ZapfDingbatsITC"}, {text: "手牌多於 4 張則棄牌
 
 ", font: "MicrosoftJhengHeiRegular"}, {text: "行動：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande"}, {text: "• 1 動：抽 1 張牌", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 1 動：換任意張牌", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 1 動：出教學卡", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "  (需擲親和骰 3 以上)", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 1 動：出助教卡", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 2 動：出環境卡", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 2 動：出技藝卡", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "  (若已有技藝卡, 則需棄牌)", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• ? 動：出特殊卡", font: "MicrosoftJhengHeiRegular"}}}|]
-        _rule2 = [$q|, fill: linear fill, gradient color: {0.9,0.9,0.9}, draws shadow: false, corner radius: 15, side padding: 15, vertical padding: 0, text: {{text: "教學失效因素：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande"}, {text: "• 麻痺未解", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 無一風格相符", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 任一風格碰到障礙", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 修正後力道 0 以下
+        _rule2 = [$q|, fill: linear fill, gradient color: {0.9,0.9,0.9}, draws shadow: false, corner radius: 15, side padding: 15, vertical padding: 0, text: {{text: "教學失效因素：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande"}, {text: "• 麻痺未解", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 無一風格相符", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 修正後力道 0 以下
 
-", font: "MicrosoftJhengHeiRegular"}, {text: "力道修正因素：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande-Bold"}, {text: "• 啟動助教：減值累計", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 風格覆蓋：+2
+", font: "MicrosoftJhengHeiRegular"}, {text: "力道修正因素：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande-Bold"}, {text: "• 風格障礙：每項 -2", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 風格完全覆蓋：+2
 
 ", font: "MicrosoftJhengHeiRegular"}, {text: "計分：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande-Bold"}, {text: "• 失敗：出無效教學者 -1", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 成功：+2 / +1", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 特別成功：+4 / +2", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 解麻痺獎分： +1", font: "MicrosoftJhengHeiRegular"}}}|]
         _begin = "make new shape at end of graphics with properties {"
         _origin = [$qq|origin: \{{ left shape }, { top shape }}, |];
 
-data Fill = FillWhite | FillLinear Color | FillRadial Color | FillRadialOut Color | FillColor Color | FillParalyzed | FillNone
+data Fill = FillWhite | FillLinear Color | FillRadial Color | FillRadialOut Color | FillColor Color | FillNonTopic | FillNone
 
 instance ShowQ Fill where
     showQ FillWhite = ""
@@ -237,13 +243,13 @@ instance ShowQ Fill where
     showQ (FillRadial color) = [$qq|fill $color gradient color:\{0.95, 0.95, 0.95}, fill: radial fill,|]
     showQ (FillRadialOut color) = [$qq|gradient $color fill: radial fill,|]
     showQ (FillColor color) = [$qq|fill $color|]
-    showQ FillParalyzed = showQ $ FillRadialOut (Color 0.7 0.7 0.7)
+    showQ FillNonTopic = showQ $ FillRadialOut (Color 0.7 0.7 0.7)
     showQ FillNone = "fill: no fill,"
 
 
 instance ShowQ Stroke where
     showQ StrokeNone = "draws stroke:false,"
-    showQ StrokeParalyzed = "stroke color: {0.5, 0.2, 0.2}, stroke pattern: 3,"
+    showQ StrokeParalyzed = "stroke color: {0.5, 0.2, 0.2}, "
     showQ StrokeDotted = "stroke color: {0.5, 0.5, 0.5}, stroke pattern: 24,"
     showQ StrokeWhite = "stroke color: {1, 1, 1},"
     showQ StrokeBlack = "stroke color: {0, 0, 0},"
@@ -317,7 +323,7 @@ styleIcon (Anti (Anti x)) = styleIcon x
 styleIcon (Anti x) = (styleIcon x)
     { stroke       = StrokeParalyzed
     , cornerRadius = 5
-    , fill         = FillParalyzed
+    , fill         = FillNonTopic
     }
 
 abilityText :: Ability -> Text
@@ -377,12 +383,12 @@ renderTopic topic n = icon{ top = top + n * (height + 5) }
     where
     icon@Shape{..} = topicIcon topic
 
-renderParalyzed :: Topic -> Float -> Shape
-renderParalyzed topic n = icon
+renderNonTopic :: Topic -> Float -> Shape
+renderNonTopic topic n = icon
     { top    = top + n * (height + 5)
     , left   = 154
-    , stroke = StrokeParalyzed
-    , fill   = FillParalyzed
+    , stroke = StrokeNone
+    , fill   = FillNonTopic
     }
     where
     icon@Shape{..} = topicIcon topic
@@ -547,7 +553,7 @@ renderCard Skill{..} =
     , outerRect
     ]
 
-renderCard Student{..} = topicsShapes ++ paralyzedShapes ++ styleShapes ++
+renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
     [ renderFlavor flavor
     , renderName name "cwTeXYen"
     , renderPower [$qq|$interested / $uninterested|] (Color 0.5 0.25 0) (Color 1 0.95 0.9)
@@ -556,12 +562,19 @@ renderCard Student{..} = topicsShapes ++ paralyzedShapes ++ styleShapes ++
     ]
     where
     styleShapes = map styleIcon styles
-    paralyzedShapes = [ renderParalyzed t n | t <- paralyzed' | n <- [((1 - toEnum (length paralyzed')) / 2)..] ]
-    paralyzed' = filter (`notElem` topics) paralyzed
+    nonTopicShapes =
+        [ let shape = renderNonTopic t n in
+            if t `elem` paralyzed
+                then shape{ stroke = StrokeParalyzed }
+                else shape
+        | t <- nonTopics
+        | n <- [((1 - toEnum (length nonTopics)) / 2)..]
+        ]
+    nonTopics = filter (`notElem` topics) [minBound..maxBound]
     topicsShapes =
         [ let shape = renderTopic t n in
             if t `elem` paralyzed
-                then shape{ stroke = StrokeParalyzed, fill = FillParalyzed }
+                then shape{ stroke = StrokeParalyzed }
                 else shape
         | t <- topics
         | n <- [((1 - toEnum (length topics)) / 2)..]
