@@ -196,7 +196,7 @@ data Shape = Shape
     , shadow          :: Shadow
     , text            :: Text
     , picture         :: Picture
-    } | PageBreak | RuleShape1 { left :: X, top :: Y } | RuleShape2 { left :: X, top :: Y } | FaceShape { left :: X, top :: Y, shapeColor :: Color } | SerialShape { left :: X, top :: Y, serialColor :: Color, serialNumber :: Int } | Power { left :: X, top :: Y, strength :: Maybe Int, isTopic :: Boolean }
+    } | PageBreak | RuleShape1 { left :: X, top :: Y } | RuleShape2 { left :: X, top :: Y } | FaceShape { left :: X, top :: Y, shapeColor :: Color } | SerialShape { left :: X, top :: Y, serialColor :: Color, serialNumber :: Int } | Power { left :: X, top :: Y, strength :: Maybe Int, isTopic :: Bool }
 
 instance ShowQ Shape where
     showQ shape = case shape of
