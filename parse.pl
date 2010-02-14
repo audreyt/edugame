@@ -4,46 +4,46 @@ use FindBin '$Bin';
 sub parse (&$);
 
 my $actions = parse {
-    my ($name, $turns, $effect, $flavor) = @_;
+    my ($serial, $name, $turns, $effect, $flavor) = @_;
 
     $flavor = splitWords($flavor);
     $effect = splitWords($effect);
 
     return << ".";
-    , Action "$name" $turns "$effect"
+    , Action $serial "$name" $turns "$effect"
         "$flavor"
 .
 
 } "actions";
 
 my $skills = parse {
-    my ($name, $effect, $flavor) = @_;
+    my ($serial, $name, $effect, $flavor) = @_;
 
     $flavor = splitWords($flavor);
     $effect = splitWords($effect);
 
     return << ".";
-    , Skill "$name" "$effect"
+    , Skill $serial "$name" "$effect"
         "$flavor"
 .
 
 } "skills";
 
 my $environments = parse {
-    my ($name, $effect, $flavor) = @_;
+    my ($serial, $name, $effect, $flavor) = @_;
 
     $flavor = splitWords($flavor);
     $effect = splitWords($effect);
 
     return << ".";
-    , Environment "$name" "$effect"
+    , Environment $serial "$name" "$effect"
         "$flavor"
 .
 
 } "environments";
 
 my $students = parse {
-    my ($name, $styles, $power, $topics, $paralyzed, $flavor) = @_;
+    my ($serial, $name, $styles, $power, $topics, $paralyzed, $flavor) = @_;
     $styles = join ',', map {/[a-z]/ ? "Anti ".uc($_) : $_ } sort split(//, $styles);
 
     my ($p, $t) = split(/\//, $power);
@@ -57,13 +57,13 @@ my $students = parse {
     $paralyzed = join ',', sort split(//, lc $paralyzed);
     
     return << ".";
-    , Student "$name" [$styles] $p $t [$topics] [$paralyzed]
+    , Student $serial "$name" [$styles] $p $t [$topics] [$paralyzed]
         "$flavor"
 .
 } "students";
 
 my $lessons = parse {
-    my ($name, $styles, $power, $topics, $abilities, $flavor) = @_;
+    my ($serial, $name, $styles, $power, $topics, $abilities, $flavor) = @_;
     $styles = join ',', map {/[a-z]/ ? "Anti ".uc($_) : $_ } sort split(//, $styles);
 
     my ($p, $t) = split(/\//, $power);
@@ -77,13 +77,13 @@ my $lessons = parse {
     $abilities = join ',', sort split(//, lc $abilities);
     
     return << ".";
-    , Lesson "$name" [$styles] $p $t [$topics] [$abilities]
+    , Lesson $serial "$name" [$styles] $p $t [$topics] [$abilities]
         "$flavor"
 .
 } "lessons";
 
 my $assistants = parse {
-    my ($name, $styles, $topics, $abilities, $cost, $flavor) = @_;
+    my ($serial, $name, $styles, $topics, $abilities, $cost, $flavor) = @_;
     $styles = join ',', map {/[a-z]/ ? "Anti ".uc($_) : $_ } sort split(//, $styles);
 
     $flavor = splitWords($flavor);
@@ -91,7 +91,7 @@ my $assistants = parse {
     $abilities = join ',', sort split(//, lc $abilities);
     
     return << ".";
-    , Assistant "$name" [$styles] [$topics] [$abilities] $cost
+    , Assistant $serial "$name" [$styles] [$topics] [$abilities] $cost
         "$flavor"
 .
 } "assistants";
@@ -129,11 +129,13 @@ sub parse (&$) {
 $type =
 .
 
+    my $serial = 0;
     while (<$fh>) {
         chomp;
+        $serial++;
         my @fields = split(/\s*\|\s*/, $_) ;
         shift @fields;
-        $out .= $code->(@fields);
+        $out .= $code->($serial, @fields);
     }
 
     $out =~ s/,/[/ or $out .= "   [\n";
