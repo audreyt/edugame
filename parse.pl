@@ -7,7 +7,7 @@ my $actions = parse {
     my ($serial, $name, $turns, $effect, $flavor) = @_;
 
     $flavor = splitWords($flavor);
-    $effect = splitWords($effect);
+    $effect = splitEffectWords($effect);
 
     return << ".";
     , Action $serial "$name" $turns "$effect"
@@ -20,7 +20,7 @@ my $skills = parse {
     my ($serial, $name, $effect, $flavor) = @_;
 
     $flavor = splitWords($flavor);
-    $effect = splitWords($effect);
+    $effect = splitEffectWords($effect);
 
     return << ".";
     , Skill $serial "$name" "$effect"
@@ -33,7 +33,7 @@ my $environments = parse {
     my ($serial, $name, $effect, $flavor) = @_;
 
     $flavor = splitWords($flavor);
-    $effect = splitWords($effect);
+    $effect = splitEffectWords($effect);
 
     return << ".";
     , Environment $serial "$name" "$effect"
@@ -104,14 +104,19 @@ close FH;
 
 #######
 
+sub splitEffectWords {
+    splitWords(@_, 14);
+}
+
 sub splitWords {
     my $words = shift;
+    my $max = shift || 18;
     my @chunks = split(/(?<=\W)/, $words);
     my $len = 0;
     my $out = '';
     while (my $chunk = shift @chunks) {
         $len += length $chunk;
-        if ($len > 18) {
+        if ($len > $max) {
             $len = length $chunk;
             $out .= '\\n';
         }

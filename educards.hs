@@ -1,11 +1,12 @@
 {-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances, PatternGuards, CPP #-}
 import Data.Char
+import Data.List (partition)
 import System.Environment.FindBin
 import qualified System.IO.UTF8 as UTF8
 import Text.InterpolatedString.Perl6
 
 rules = [ RuleCard1, RuleCard2 ]
-_Cards_ = map head [ rules, students, lessons, actions, skills, environments ]
+_Cards_ = concat [ rules, students, lessons, actions, skills, environments ]
 
 -- 「學習風格」：在牌的四角，有VARK四種：V代表視覺型、A代表聽覺型、R代表閱讀型、K代表操作型。
 data Style = V | A | R | K | Anti Style deriving Show
@@ -154,12 +155,12 @@ cardHeight = 252
 -- paperWidth = 1600
 -- paperHeight = 2300
 paperWidth = 540
-paperHeight = 800
+paperHeight = 700
 
 type X = Float
 type Y = Float
 
-data Stroke = StrokeWhite | StrokeBlack | StrokeBlackThick | StrokeParalyzed | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeNone
+data Stroke = StrokeWhite | StrokeBlack | StrokeBlackThick | StrokeParalyzed | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeNone deriving Eq
 data Shadow = ShadowBottom | ShadowMiddle | ShadowNone
 data Placement = PlacementTop | PlacementMiddle | PlacementBottom
 
@@ -210,14 +211,14 @@ maybeNil f x = case f x of
 
 maybeVoid :: (a -> Int) -> a -> String
 maybeVoid f x = case f x of
-    -999 -> ", gradient color: {0, 0, 0}"
+    -999 -> ", gradient color: {0, 0, 0}, fill: radial fill"
     _    -> ""
 
 instance ShowQ Shape where
     showQ shape = case shape of
         Power{..} -> [$qq|
-make new shape at end of graphics with properties \{fill: no fill, draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 44}, {top + 195}}, text: \{text: "{maybeNil strInterested strength}", font: "BookmanOldStyle-Bold", size: 22, alignment: center}{maybeVoid strInterested strength}}
-make new shape at end of graphics with properties \{fill: radial fill, draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 107}, {top + 195}}, text: \{text: "{maybeNil strUninterested strength}", font: "BookmanOldStyle", size: 18, alignment: center}{maybeVoid strUninterested strength}}
+make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 44}, {top + 195}}, text: \{text: "{maybeNil strInterested strength}", font: "BookmanOldStyle-Bold", size: 22, alignment: center}{maybeVoid strInterested strength}}
+make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 107}, {top + 195}}, text: \{text: "{maybeNil strUninterested strength}", font: "BookmanOldStyle", size: 18, alignment: center}{maybeVoid strUninterested strength}}
 |]
         SerialShape{..} -> [$qq|make new shape at end of graphics with properties \{textPosition: \{0, 0.25}, text placement: bottom, draws shadow: false, corner radius: 2, size: \{21, 17}, side padding: 1, flipped vertically: true, stroke {serialColor} name: "HorizontalTriangle", vertical padding: 0, origin: \{{left + 160}, {top + 232}}, fill color: \{0, 0, 0}, textSize: \{0.875, 0.5}, text: \{text: "{if serialNumber < 10 then " " else ""}{ serialNumber }", font: "AmericanTypewriter-Condensed", size: 9, color: \{1, 1, 1}}, gradient color: \{0.25, 0.25, 0.25}}
 |]
@@ -305,7 +306,7 @@ instance ShowQ Picture where
 |]
     showQ PictureNone = ""
 
-data Color = Color { red :: Float, green :: Float, blue :: Float } deriving Show
+data Color = Color { red :: Float, green :: Float, blue :: Float } deriving (Show, Eq)
 
 instance ShowQ Color where
     showQ Color{..} = [$qq|color: \{$red, $green, $blue}, |]
@@ -516,17 +517,18 @@ renderEffect effect strokeColor fillColor = mkShape
 
 renderTurns :: Int -> Shape
 renderTurns turns = mkShape
-    { left            = 77
-    , top             = 171
-    , width           = 25
-    , height          = 16
+    { left            = 69.5
+    , top             = 164
+    , width           = 40
+    , height          = 22
+    , cornerRadius    = 3
     , stroke          = StrokeSingle (Color 0.6 0.3 0.3)
     , fill            = FillWhite
     , verticalPadding = 4
     , text            = mkText
         { txt   = show turns ++ " ⏎"
         , font  = "Gentium"
-        , size  = 8
+        , size  = 14
         , placement = PlacementTop
         }
     }
@@ -590,13 +592,16 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
     , outerRect
     ]
     where
+    orderParalyzed xs = nps ++ ps
+        where
+        (ps, nps) = partition (`elem` paralyzed) xs
     styleShapes = map styleIcon styles
     nonTopicShapes =
         [ let shape = renderNonTopic t n in
             if t `elem` paralyzed
                 then shape{ stroke = StrokeParalyzed }
                 else shape
-        | t <- nonTopics
+        | t <- orderParalyzed nonTopics
         | n <- [((1 - toEnum (length nonTopics)) / 2)..]
         ]
     nonTopics = filter (`notElem` topics) [minBound..maxBound]
@@ -605,7 +610,7 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
             if t `elem` paralyzed
                 then shape{ stroke = StrokeParalyzed }
                 else shape
-        | t <- topics
+        | t <- orderParalyzed topics
         | n <- [((1 - toEnum (length topics)) / 2)..]
         ]
 renderCard Lesson{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
