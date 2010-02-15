@@ -196,11 +196,31 @@ data Shape = Shape
     , shadow          :: Shadow
     , text            :: Text
     , picture         :: Picture
-    } | PageBreak | RuleShape1 { left :: X, top :: Y } | RuleShape2 { left :: X, top :: Y } | FaceShape { left :: X, top :: Y, shapeColor :: Color } | SerialShape { left :: X, top :: Y, serialColor :: Color, serialNumber :: Int } | Power { left :: X, top :: Y, strength :: Maybe Int, isTopic :: Bool }
+    } | PageBreak | RuleShape1 { left :: X, top :: Y } | RuleShape2 { left :: X, top :: Y } | FaceShape { left :: X, top :: Y, shapeColor :: Color } | SerialShape { left :: X, top :: Y, serialColor :: Color, serialNumber :: Int } | Power { left :: X, top :: Y, strength :: Strength }
+    
+data Strength = MkStrength
+    { strInterested :: Int
+    , strUninterested :: Int
+    }
+
+maybeNil :: (a -> Int) -> a -> String
+maybeNil f x = case f x of
+    -999 -> ""
+    val  -> show val
+
+maybeVoid :: (a -> Int) -> a -> String
+maybeVoid f x = case f x of
+    -999 -> ", gradient color: {0, 0, 0}"
+    _    -> ""
 
 instance ShowQ Shape where
     showQ shape = case shape of
-        SerialShape{..} -> "make new shape at end of graphics with properties {textPosition: {0, 0.25}, text placement: bottom, draws shadow: false, corner radius: 2, size: {21, 17}, side padding: 1, flipped vertically: true, stroke " ++ showQ serialColor ++ "name: \"HorizontalTriangle\", vertical padding: 0, origin: {" ++ show (left + 160) ++ ", " ++ show (top + 232) ++ "}, fill color: {0, 0, 0}, textSize: {0.875, 0.5}, text: {text: \"" ++ (if serialNumber < 10 then " " else "") ++ show serialNumber ++ "\", font: \"AmericanTypewriter-Condensed\", size: 9, color: {1, 1, 1}}, gradient color: {0.25, 0.25, 0.25}}"
+        Power{..} -> [$qq|
+make new shape at end of graphics with properties \{fill: no fill, draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 44}, {top + 195}}, text: \{text: "{maybeNil strInterested strength}", font: "BookmanOldStyle-Bold", size: 22, alignment: center}{maybeVoid strInterested strength}}
+make new shape at end of graphics with properties \{fill: radial fill, draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 107}, {top + 195}}, text: \{text: "{maybeNil strUninterested strength}", font: "BookmanOldStyle", size: 18, alignment: center}{maybeVoid strUninterested strength}}
+|]
+        SerialShape{..} -> [$qq|make new shape at end of graphics with properties \{textPosition: \{0, 0.25}, text placement: bottom, draws shadow: false, corner radius: 2, size: \{21, 17}, side padding: 1, flipped vertically: true, stroke {serialColor} name: "HorizontalTriangle", vertical padding: 0, origin: \{{left + 160}, {top + 232}}, fill color: \{0, 0, 0}, textSize: \{0.875, 0.5}, text: \{text: "{if serialNumber < 10 then " " else ""}{ serialNumber }", font: "AmericanTypewriter-Condensed", size: 9, color: \{1, 1, 1}}, gradient color: \{0.25, 0.25, 0.25}}
+|]
         RuleShape1{..} -> [$qq|$_begin $_origin size: \{ $cardWidth, $cardHeight } $_rule1
 |]
         RuleShape2{..} -> [$qq|$_begin $_origin size: \{ $cardWidth, $cardHeight } $_rule2
@@ -470,29 +490,18 @@ renderName name fontName = mkShape
         }
     }
 
-renderPower :: String -> Color -> Color -> Shape
-renderPower power strokeColor fillColor = mkShape
-    { left            = 64
-    , top             = 200
-    , width           = 52
-    , height          = 19
-    , cornerRadius    = 20
-    , stroke          = StrokeSingle strokeColor
-    , fill            = FillColor fillColor
-    , shadow          = ShadowBottom
-    , text            = mkText
-        { txt       = power
-        , font      = "Helvetica"
-        , size      = 14
-        , placement = PlacementMiddle
-        }
+renderPower :: Int -> Int -> Shape -- -> Color -> Color -> Shape
+renderPower i u = Power
+    { left            = 0
+    , top             = 0
+    , strength        = MkStrength i u
     }
 
 renderEffect :: String -> Color -> Color -> Shape
 renderEffect effect strokeColor fillColor = mkShape
-    { left            = 8
+    { left            = 4
     , top             = 197
-    , width           = 164
+    , width           = 168
     , height          = 25
     , stroke          = StrokeSingle strokeColor
     , shadow          = ShadowBottom
@@ -534,7 +543,7 @@ _GrayBlue_ = Color 0.5 0.5 0.6
 
 renderCard :: Card -> [Shape]
 renderCard EmptyStudent =
-    [ renderPower "/" _Brown_ (Color 1 0.95 0.9)
+    [ renderPower (-1) (-1) -- _Brown_ (Color 1 0.95 0.9)
     , renderSerial _Brown_ 0
     , innerRect _Brown_ (Color 0.9 0.85 0.8)
     , outerRect
@@ -575,7 +584,7 @@ renderCard Skill{..} =
 renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
     [ renderFlavor flavor
     , renderName name "cwTeXYen"
-    , renderPower [$qq|$interested / $uninterested|] _Brown_ (Color 1 0.95 0.9)
+    , renderPower interested uninterested -- _Brown_ (Color 1 0.95 0.9)
     , renderSerial _Brown_ serial
     , innerRect _Brown_ (Color 0.9 0.85 0.8)
     , outerRect
@@ -602,12 +611,13 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
 renderCard Lesson{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
     [ renderFlavor flavor
     , renderName name "cwTeXHeiBold"
-    , renderPower power _Blue_ (Color 0.9 0.9 1)
+    , renderPower interested uninterested -- power _Blue_ (Color 0.9 0.9 1)
     , renderSerial _Blue_ serial
     , innerRect _Blue_ _GrayBlue_
     , outerRect
     ]
     where
+    {-
     power | interested == uninterested = interested'
           | otherwise                  = [$qq|$interested' / $uninterested'|]
     interested' = maybeNil interested
@@ -615,6 +625,7 @@ renderCard Lesson{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
     maybeNil n = case n of
         100 -> "✘"
         _ -> show n
+    -}
     styleShapes = map styleIcon styles
     abilityShapes = [ renderAbility t n | t <- abilities | n <- [((1 - toEnum (length abilities)) / 2)..] ]
     topicsShapes = case topics of
@@ -623,7 +634,7 @@ renderCard Lesson{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
 renderCard Assistant{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
     [ renderFlavor flavor
     , renderName name "cwTeXHeiBold"
-    , (renderPower (show (negate cost)) _Blue_ (Color 0.9 0.9 1))
+    , (renderPower (negate cost) (negate cost)) -- _Blue_ (Color 0.9 0.9 1))
         { cornerRadius = 3
         }
     , renderSerial _GrayBlue_ serial

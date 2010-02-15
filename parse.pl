@@ -48,8 +48,8 @@ my $students = parse {
 
     my ($p, $t) = split(/\//, $power);
     $t ||= $p;
-    $p = 100 if $p eq 'x';
-    $t = 100 if $t eq 'x';
+    $p = -999 if $p eq 'x';
+    $t = -999 if $t eq 'x';
     $topics = '' if $topics eq '*';
 
     $flavor = splitWords($flavor);
@@ -57,7 +57,7 @@ my $students = parse {
     $paralyzed = join ',', sort split(//, lc $paralyzed);
     
     return << ".";
-    , Student $serial "$name" [$styles] $p $t [$topics] [$paralyzed]
+    , Student $serial "$name" [$styles] ($p) ($t) [$topics] [$paralyzed]
         "$flavor"
 .
 } "students";
@@ -68,8 +68,8 @@ my $lessons = parse {
 
     my ($p, $t) = split(/\//, $power);
     $t ||= $p if $t ne '0';
-    $p = 100 if $p eq 'x';
-    $t = 100 if $t eq 'x';
+    $p = -999 if $p eq 'x';
+    $t = -999 if $t eq 'x';
     $topics = '' if $topics eq '*';
 
     $flavor = splitWords($flavor);
@@ -77,7 +77,7 @@ my $lessons = parse {
     $abilities = join ',', sort split(//, lc $abilities);
     
     return << ".";
-    , Lesson $serial "$name" [$styles] $p $t [$topics] [$abilities]
+    , Lesson $serial "$name" [$styles] ($p) ($t) [$topics] [$abilities]
         "$flavor"
 .
 } "lessons";
