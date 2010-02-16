@@ -483,6 +483,25 @@ renderTopicBorder topic = mkShape
     , cornerRadius = 15
     }
 
+renderStudentName :: String -> String -> Shape
+renderStudentName name fontName = mkShape
+    { left            = 4
+    , top             = 5
+    , width           = 168
+    , height          = 25
+    , cornerRadius    = 0
+    , verticalPadding = 2
+    , fill            = FillNone
+    , stroke          = StrokeNone
+    , shadow          = ShadowNone
+    , text            = mkText
+        { txt   = name
+        , font  = fontName
+        , size  = 22
+        }
+    }
+
+
 renderName :: String -> String -> Shape
 renderName name fontName = mkShape
     { left            = 76
@@ -595,7 +614,8 @@ renderCard Skill{..} =
 
 renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
     [ renderFlavor flavor
-    , renderName name "cwTeXYen"
+    , renderName "" "cwTeXYen"
+    , renderStudentName name "cwTeXYen"
     , renderPower interested uninterested -- _Brown_ (Color 1 0.95 0.9)
     , renderSerial _Brown_ serial
     , (innerRect _Brown_ (Color 0.9 0.85 0.8))
