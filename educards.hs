@@ -6,7 +6,7 @@ import qualified System.IO.UTF8 as UTF8
 import Text.InterpolatedString.Perl6
 
 rules = [ RuleCard1, RuleCard2 ]
-_Cards_ = concat [ rules, students, lessons, actions, skills, environments ]
+_Cards_ = topicCards -- concat [ topicCards, rules, students, lessons, actions, skills, environments ]
 
 -- 「學習風格」：在牌的四角，有VARK四種：V代表視覺型、A代表聽覺型、R代表閱讀型、K代表操作型。
 data Style = V | A | R | K | Anti Style deriving Show
@@ -130,7 +130,7 @@ faceColors =
     ]
 
 sheet1Cards = topicCards ++ playerCards
-topicCards = concatMap (replicate 9 . TopicCard) [minBound..maxBound] 
+topicCards = concatMap (replicate 1 . TopicCard) [minBound..maxBound] 
 playerCards = concat [ [RuleCard1, RuleCard2, FaceCard c] | c <- faceColors ]
 
 renderCards :: X -> Y -> [Card] -> [Shape]
@@ -160,7 +160,7 @@ paperHeight = 700
 type X = Float
 type Y = Float
 
-data Stroke = StrokeWhite | StrokeBlack | StrokeBlackThick | StrokeParalyzed | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeNone deriving Eq
+data Stroke = StrokeWhite | StrokeBlack | StrokeBlackThick | StrokeParalyzed | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeThick Color | StrokeNone deriving Eq
 data Shadow = ShadowBottom | ShadowMiddle | ShadowNone
 data Placement = PlacementTop | PlacementMiddle | PlacementBottom
 
@@ -218,7 +218,7 @@ instance ShowQ Shape where
     showQ shape = case shape of
         Power{..} -> [$qq|
 make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 44}, {top + 195}}, text: \{text: "{maybeNil strInterested strength}", font: "BookmanOldStyle-Bold", size: 22, alignment: center}{maybeVoid strInterested strength}}
-make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 107}, {top + 195}}, text: \{text: "{maybeNil strUninterested strength}", font: "BookmanOldStyle", size: 18, alignment: center}{maybeVoid strUninterested strength}}
+make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 107}, {top + 195}}, text: \{text: "{maybeNil strUninterested strength}", font: "BookmanOldStyle", size: 18, alignment: center}{maybeVoid strUninterested strength}, fill: radial fill}
 |]
         SerialShape{..} -> [$qq|make new shape at end of graphics with properties \{textPosition: \{0, 0.25}, text placement: bottom, draws shadow: false, corner radius: 2, size: \{21, 17}, side padding: 1, flipped vertically: true, stroke {serialColor} name: "HorizontalTriangle", vertical padding: 0, origin: \{{left + 160}, {top + 232}}, fill color: \{0, 0, 0}, textSize: \{0.875, 0.5}, text: \{text: "{if serialNumber < 10 then " " else ""}{ serialNumber }", font: "AmericanTypewriter-Condensed", size: 9, color: \{1, 1, 1}}, gradient color: \{0.25, 0.25, 0.25}}
 |]
@@ -259,7 +259,7 @@ $picture |]
 
 ", font: "MicrosoftJhengHeiRegular"}, {text: "力道修正因素：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande-Bold"}, {text: "• 風格障礙：每項 -2", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 風格完全覆蓋：+2
 
-", font: "MicrosoftJhengHeiRegular"}, {text: "計分：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande-Bold"}, {text: "• 失敗：出無效教學者 -1", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 成功：+2 / +1", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 特別成功：+4 / +2", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 解麻痺獎分： +1", font: "MicrosoftJhengHeiRegular"}}}|]
+", font: "MicrosoftJhengHeiRegular"}, {text: "計分：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande-Bold"}, {text: "• 失敗：出無效教學者 -1", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 成功：最高+2 其他+1", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 特別成功：分數加倍", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "• 解麻痺獎分： +1", font: "MicrosoftJhengHeiRegular"}}}|]
         _begin = "make new shape at end of graphics with properties {"
         _origin = [$qq|origin: \{{ left shape }, { top shape }}, |];
 
@@ -282,6 +282,7 @@ instance ShowQ Stroke where
     showQ StrokeWhite = "stroke color: {1, 1, 1},"
     showQ StrokeBlack = "stroke color: {0, 0, 0},"
     showQ StrokeBlackThick = "stroke color: {0, 0, 0}, thickness: 10,"
+    showQ (StrokeThick color) = [$qq|stroke $color thickness:15,|]
     showQ (StrokeDouble color) = [$qq|stroke $color thickness:5, double stroke:true,|]
     showQ (StrokeSingle color) = [$qq|stroke $color|]
     showQ (StrokeDoubleDotted color) = [$qq|stroke $color thickness:5, double stroke:true, stroke pattern: 24, |]
@@ -454,7 +455,7 @@ renderTopicLarge topic = mkShape
     { left            = 0
     , top             = 0
     , width           = cardWidth
-    , height          = cardHeight - 60
+    , height          = cardHeight -- - 60
     , cornerRadius    = 0
     , text            = (topicText topic){ size  = 144 }
     }
@@ -471,6 +472,16 @@ renderTopicLabel topic = mkShape
         , font  = "cwTeXKai"
         , size  = 48
         }
+    }
+
+renderTopicBorder :: Topic -> Shape
+renderTopicBorder topic = mkShape
+    { width        = cardWidth - 13
+    , height       = cardHeight - 13
+    , top          = 6.5
+    , left         = 6.5
+    , stroke       = StrokeThick $ color (topicText topic)
+    , cornerRadius = 15
     }
 
 renderName :: String -> String -> Shape
@@ -555,8 +566,8 @@ renderCard RuleCard2 = [ RuleShape2 0 0 ]
 renderCard FaceCard{..} = [ FaceShape 0 0 cardColor ]
 renderCard TopicCard{..} =
     [ renderTopicLarge topic
-    , renderTopicLabel topic
-    , outerRect
+--    , renderTopicLabel topic
+    , renderTopicBorder topic
     ]
 renderCard Environment{..} =
     [ renderFlavor flavor

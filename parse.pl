@@ -105,7 +105,7 @@ close FH;
 #######
 
 sub splitEffectWords {
-    splitWords(@_, 14);
+    splitWords(@_, 16);
 }
 
 sub splitWords {
