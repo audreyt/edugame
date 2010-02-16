@@ -5,8 +5,8 @@ import System.Environment.FindBin
 import qualified System.IO.UTF8 as UTF8
 import Text.InterpolatedString.Perl6
 
-rules = [ RuleCard1, RuleCard2 ]
-_Cards_ = students -- concat [ topicCards, rules, students, lessons, actions, skills, environments ]
+rules = concat $ replicate 4 [ RuleCard1, RuleCard2 ]
+_Cards_ = concat [ topicCards, rules, students, lessons, actions, skills, environments ]
 
 -- 「學習風格」：在牌的四角，有VARK四種：V代表視覺型、A代表聽覺型、R代表閱讀型、K代表操作型。
 data Style = V | A | R | K | Anti Style deriving Show
