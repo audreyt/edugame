@@ -6,7 +6,7 @@ import qualified System.IO.UTF8 as UTF8
 import Text.InterpolatedString.Perl6
 
 rules = [ RuleCard1, RuleCard2 ]
-_Cards_ = topicCards -- concat [ topicCards, rules, students, lessons, actions, skills, environments ]
+_Cards_ = concat [ topicCards, rules, students, lessons, actions, skills, environments ]
 
 -- 「學習風格」：在牌的四角，有VARK四種：V代表視覺型、A代表聽覺型、R代表閱讀型、K代表操作型。
 data Style = V | A | R | K | Anti Style deriving Show
@@ -130,7 +130,7 @@ faceColors =
     ]
 
 sheet1Cards = topicCards ++ playerCards
-topicCards = concatMap (replicate 1 . TopicCard) [minBound..maxBound] 
+topicCards = concatMap (replicate 4 . TopicCard) [minBound..maxBound] 
 playerCards = concat [ [RuleCard1, RuleCard2, FaceCard c] | c <- faceColors ]
 
 renderCards :: X -> Y -> [Card] -> [Shape]
