@@ -134,13 +134,12 @@ sub parse (&$) {
 $type =
 .
 
-    my $serial = 0;
     while (<$fh>) {
         chomp;
-        $serial++;
         my @fields = split(/\s*\|\s*/, $_) ;
         shift @fields;
-        $out .= $code->($serial, @fields);
+        splice(@fields, 1, 2);
+        $out .= $code->(@fields);
     }
 
     $out =~ s/,/[/ or $out .= "   [\n";
