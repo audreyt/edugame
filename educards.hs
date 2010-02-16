@@ -6,7 +6,7 @@ import qualified System.IO.UTF8 as UTF8
 import Text.InterpolatedString.Perl6
 
 rules = [ RuleCard1, RuleCard2 ]
-_Cards_ = concat [ topicCards, rules, students, lessons, actions, skills, environments ]
+_Cards_ = students -- concat [ topicCards, rules, students, lessons, actions, skills, environments ]
 
 -- 「學習風格」：在牌的四角，有VARK四種：V代表視覺型、A代表聽覺型、R代表閱讀型、K代表操作型。
 data Style = V | A | R | K | Anti Style deriving Show
@@ -242,8 +242,8 @@ make new shape at end of graphics with properties \{draws shadow: false, corner 
         Shape{..} -> let {
             _size   = [$qq|size: \{$width, $height}, |];
             _end    = [$qq|corner radius: $cornerRadius, vertical padding: $verticalPadding, side padding: 0 }|]
-        } in [$qq|$_begin $stroke $shadow $text $fill $_origin $_size $_end
-$picture |]
+        } in [$qq|$_begin $stroke $shadow $text $fill $picture $_origin $_size $_end
+|]
         PageBreak  -> [$q|
             end tell
             make new canvas
@@ -303,8 +303,7 @@ instance ShowQ Text where
 data Picture = PictureRelative FilePath | PictureNone
 
 instance ShowQ Picture where
-    showQ (PictureRelative path) = '\n':[$qq|set image of result to "$__Bin__/$path"
-|]
+    showQ (PictureRelative path) = [$qq|image sizing: stretched, image: "$__Bin__/$path",|]
     showQ PictureNone = ""
 
 data Color = Color { red :: Float, green :: Float, blue :: Float } deriving (Show, Eq)
@@ -599,7 +598,8 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
     , renderName name "cwTeXYen"
     , renderPower interested uninterested -- _Brown_ (Color 1 0.95 0.9)
     , renderSerial _Brown_ serial
-    , innerRect _Brown_ (Color 0.9 0.85 0.8)
+    , (innerRect _Brown_ (Color 0.9 0.85 0.8))
+        { picture = PictureRelative ("images/students/" ++ show serial ++ ".jpg") }
     , outerRect
     ]
     where
