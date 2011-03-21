@@ -1,4 +1,4 @@
-{-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances, PatternGuards, CPP #-}
+{-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances, PatternGuards, CPP, UnicodeSyntax #-}
 import Data.Char
 import Data.List (partition)
 import System.Environment.FindBin
@@ -7,8 +7,38 @@ import Text.InterpolatedString.Perl6
 rules = concat $ replicate 4 [ RuleCard1, RuleCard2 ]
 _Cards_ = concat [ topicCards, rules, students, lessons, actions, skills, environments ]
 
--- 「學習風格」：在牌的四角，有VARK四種：V代表視覺型、A代表聽覺型、R代表閱讀型、K代表操作型。
 data Style = V | A | R | K | Anti Style deriving Show
+
+mkStyles ∷ [Style] → Styles
+mkStyles = foldr mkStyle (MkStyles Nor Nor Nor Nor)
+    where
+    mkStyle V s = s{ _V = Pro }
+    mkStyle A s = s{ _A = Pro }
+    mkStyle R s = s{ _R = Pro }
+    mkStyle K s = s{ _K = Pro }
+    mkStyle (Anti V) s = s{ _V = Con }
+    mkStyle (Anti A) s = s{ _A = Con }
+    mkStyle (Anti R) s = s{ _R = Con }
+    mkStyle (Anti K) s = s{ _K = Con }
+
+fromStyles :: Styles -> [Style]
+fromStyles (MkStyles v a r k) = foldr fromStyle [] [(V, v), (A, a), (R, r), (K, k)]
+    where
+    fromStyle (x, Pro) styles = (x:styles)
+    fromStyle (x, Con) styles = (Anti x:styles)
+    fromStyle _        styles = styles
+
+
+student a b c d e f g h = Student a b (mkStyles c) d f g h
+lesson a b c d e f g h = Lesson a b (mkStyles c) d e f g h
+
+data Styles = MkStyles
+    { _V :: Aptitude
+    , _A :: Aptitude
+    , _R :: Aptitude
+    , _K :: Aptitude
+    } deriving Show
+data Aptitude = Pro | Nor | Con deriving Show
 
 -- 「學門」：遊戲有「數學」、「中文」、「英文」、「自然」、「社會」、「藝術」、「體育」七個學門。
 data Topic = Mat | Chi | Eng | Nat | Soc | Art | Phy deriving (Eq, Show, Enum, Bounded)
@@ -40,9 +70,8 @@ data Card
     = Student -- 學生
         { serial            :: Int          -- 序號
         , name              :: String       -- 名稱
-        , styles            :: [Style]      -- 學習風格
-        , interested        :: Int          -- 蒙昧值(有興趣時)
-        , uninterested      :: Int          -- 蒙昧值(無興趣時)
+        , styles            :: Styles       -- 學習風格
+        , threshold         :: Int          -- 蒙昧值
         , topics            :: [Topic]      -- 有興趣之學門
         , paralyzed         :: [Topic]      -- 有麻痺之學門
         , flavor            :: String       -- 斜體字
@@ -50,7 +79,7 @@ data Card
     | Lesson -- 教學
         { serial            :: Int          -- 序號
         , name              :: String       -- 名稱
-        , styles            :: [Style]      -- 學習風格
+        , styles            :: Styles       -- 學習風格
         , interested        :: Int          -- 成就點數(有興趣時)
         , uninterested      :: Int          -- 成就點數(無興趣時)
         , topics            :: [Topic]      -- 學門
@@ -79,7 +108,7 @@ data Card
     | Assistant -- 助教
         { serial            :: Int          -- 序號
         , name              :: String       -- 名稱
-        , styles            :: [Style]      -- 額外風格
+        , styles            :: Styles       -- 額外風格
         , topics            :: [Topic]      -- 解麻痺學科
         , abilities         :: [Ability]    -- 特殊能力
         , cost              :: Int          -- 啟動所需力道
@@ -519,6 +548,13 @@ renderName name fontName = mkShape
         }
     }
 
+renderThreshold :: Int -> Shape -- -> Color -> Color -> Shape
+renderThreshold i = Power
+    { left            = 0
+    , top             = 0
+    , strength        = MkStrength i i
+    }
+
 renderPower :: Int -> Int -> Shape -- -> Color -> Color -> Shape
 renderPower i u = Power
     { left            = 0
@@ -615,7 +651,7 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
     [ renderFlavor flavor
     , renderName "" "cwTeXYen"
     , renderStudentName name "cwTeXYen"
-    , renderPower interested uninterested -- _Brown_ (Color 1 0.95 0.9)
+    , renderThreshold threshold -- _Brown_ (Color 1 0.95 0.9)
     , renderSerial _Brown_ serial
     , (innerRect _Brown_ (Color 0.9 0.85 0.8))
         { picture = PictureRelative ("images/students/" ++ show serial ++ ".jpg") }
@@ -625,7 +661,7 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
     orderParalyzed xs = nps ++ ps
         where
         (ps, nps) = partition (`elem` paralyzed) xs
-    styleShapes = map styleIcon styles
+    styleShapes = map styleIcon $ fromStyles styles
     nonTopicShapes =
         [ let shape = renderNonTopic t n in
             if t `elem` paralyzed
@@ -661,7 +697,7 @@ renderCard Lesson{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
         100 -> "✘"
         _ -> show n
     -}
-    styleShapes = map styleIcon styles
+    styleShapes = map styleIcon $ fromStyles styles
     abilityShapes = [ renderAbility t n | t <- abilities | n <- [((1 - toEnum (length abilities)) / 2)..] ]
     topicsShapes = case topics of
         [] -> [ renderAllTopics ]
@@ -680,7 +716,7 @@ renderCard Assistant{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
     , outerRect
     ]
     where
-    styleShapes = map styleIcon styles
+    styleShapes = map styleIcon $ fromStyles styles
     abilityShapes = [ renderAbility t n | t <- abilities | n <- [((1 - toEnum (length abilities)) / 2)..] ]
     topicsShapes = case topics of
         [] -> [ renderAllTopics ]
