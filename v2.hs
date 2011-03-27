@@ -83,10 +83,20 @@ instance ShowQ Row where
 instance ShowQ [Row] where
     showQ xs = "[" ++ (intercalate ", " $ map showQ xs) ++ "]"
 
+-- say [qq| { head $ parseTable s } |]
 main = do
-    s <- T.readFile $ __Bin__ ++ "/v2/students.txt"
-    print $ map parseStudent $ parseTable s
-    -- say [qq| { head $ parseTable s } |]
+    students     <- parseStudent `from` "students"
+    {-
+    actions      <- parseAction `from` "actions"
+    environments <- parseEnvironment `from` "environments"
+    lessons      <- parseLesson `from` "lessons"
+    skills       <- parseSkill `from` "skills"
+    -}
+    print students
+
+parser `from` table = do
+    f <- T.readFile $ __Bin__ ++ "/v2/" ++ table ++ ".txt"
+    return $ map parser $ parseTable f
 
 (<<<) :: Grok a => Row -> Text -> a
 row <<< label = case lookup label row of
