@@ -85,7 +85,7 @@ instance ShowQ [Row] where
 
 main = do
     s <- T.readFile $ __Bin__ ++ "/v2/students.txt"
-    print $ parseStudent $ head $ parseTable s
+    print $ map parseStudent $ parseTable s
     -- say [qq| { head $ parseTable s } |]
 
 (<<<) :: Grok a => Row -> Text -> a
@@ -111,18 +111,25 @@ parseStudent :: Row -> Card
 parseStudent r = Student
     { serial     = r <<< "編號"
     , name       = r <<< "名稱"
-    , styles     = parseStyles r [(V, "視"), (A, "聽"), (R, "讀"), (K, "作")]
     , threshold  = r <<< "蒙昧值"
-    , interested = parseTopics r "a" [(c, "文學"), (e, "外語"), (m, "數學"), (n, "自然"), (s, "社會"), (a, "藝術"), (p, "健體")]
-    , paralyzed  = parseTopics r "x" [(c, "文學"), (e, "外語"), (m, "數學"), (n, "自然"), (s, "社會"), (a, "藝術"), (p, "健體")]
     , flavor     = r <<< "斜體字"
+    , styles     = parseStyles r styleMap
+    , interested = parseTopics r 'a' topicMap
+    , paralyzed  = parseTopics r 'x' topicMap
     }
+    where
+    styleMap = [(V, "視"), (A, "聽"), (R, "讀"), (K, "作")]
+    topicMap = [(c, "文學"), (e, "外語"), (m, "數學"), (n, "自然"), (s, "社會"), (a, "藝術"), (p, "健體")]
 
 parseStyles r pairs = catMaybes $ map parsePair pairs
     where
     parsePair (style, label) = (r <<< label) style
 
-parseTopics _ _ _ = []
+parseTopics r ch pairs = catMaybes $ map parsePair pairs
+    where
+    parsePair (topic, label) = case lookup label r of
+        Just text -> fmap (const topic) $ T.find (== ch) text
+        _         -> error $ show (r, label)
 
 runParser :: Parser a -> Text -> a
 runParser parser text = case parse parser text of
