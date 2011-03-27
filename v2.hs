@@ -1,14 +1,15 @@
 {-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances, PatternGuards, CPP, UnicodeSyntax, OverloadedStrings, TypeSynonymInstances #-}
 import Data.Char
+import Data.Maybe
 import Data.List (partition, intercalate)
 import System.Environment.FindBin
 import Text.InterpolatedString.Perl6
 import Data.Attoparsec.Text
 import Data.Text (Text)
+import Control.Applicative
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Data.Attoparsec.Text as P
-
 
 _Cards_ = [] --students
 
@@ -84,20 +85,27 @@ instance ShowQ [Row] where
 
 main = do
     s <- T.readFile $ __Bin__ ++ "/v2/students.txt"
-    print $ map parseStudent $ parseTable s
+    print $ parseStudent $ head $ parseTable s
     -- say [qq| { head $ parseTable s } |]
 
 (<<<) :: Grok a => Row -> Text -> a
 row <<< label = case lookup label row of
-    Just text -> runParser grok text
+    Just text -> grok (T.strip text)
     _         -> error $ show (row, label)
 
 class Grok a where
-    grok :: Parser a
+    parser :: Parser a
 
-instance Grok String where grok = fmap T.unpack $ P.takeWhile (const True)
-instance Grok Text where grok = P.takeWhile (const True)
-instance Grok Int where grok = decimal
+grok :: Grok a => Text -> a
+grok = runParser parser
+
+instance Grok String where parser = fmap T.unpack $ P.takeWhile (const True)
+instance Grok Text where parser = P.takeWhile (const True)
+instance Grok Int where parser = decimal
+instance Grok (Style -> Maybe Style)
+    where parser = (char 'a' *> pure Just)
+             <|> (char 'x' *> pure (Just . Anti))
+             <|> (pure $ const Nothing)
 
 parseStudent :: Row -> Card
 parseStudent r = Student
@@ -110,7 +118,9 @@ parseStudent r = Student
     , flavor     = r <<< "斜體字"
     }
 
-parseStyles _ _ = []
+parseStyles r pairs = catMaybes $ map parsePair pairs
+    where
+    parsePair (style, label) = (r <<< label) style
 
 parseTopics _ _ _ = []
 
