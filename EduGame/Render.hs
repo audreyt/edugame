@@ -1,5 +1,6 @@
 {-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances, PatternGuards, CPP, UnicodeSyntax #-}
 module EduGame.Render where
+import EduGame.Types
 import EduGame.Utils
 
 innerRect strokeColor fillColor = mkShape
@@ -52,3 +53,38 @@ renderThreshold t = Threshold
 renderSerial :: Color -> Int -> Shape
 renderSerial = SerialShape 0 0
 
+styleIcon :: Style -> Shape
+styleIcon V = mkShape
+    { width   = 23
+    , height  = 14
+    , left    = 5
+    , top     = 10
+    , picture = PictureRelative "v2/images/v.png"
+    }
+styleIcon A = mkShape
+    { width   = 23
+    , height  = 33
+    , left    = 5
+    , top     = 195
+    , picture = PictureRelative "v2/images/a.png"
+    }
+styleIcon R = mkShape
+    { width   = 23
+    , height  = 17
+    , left    = 152
+    , top     = 10
+    , picture = PictureRelative "v2/images/r.png"
+    }
+styleIcon K = mkShape
+    { width   = 23
+    , height  = 33
+    , left    = 152
+    , top     = 195
+    , picture = PictureRelative "v2/images/k.png"
+    }
+styleIcon (Anti (Anti x)) = styleIcon x
+styleIcon (Anti x) = (styleIcon x)
+    { stroke       = StrokeParalyzed
+    , cornerRadius = 5
+    , fill         = FillNonTopic
+    }
