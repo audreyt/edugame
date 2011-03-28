@@ -1,4 +1,7 @@
 {-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances, PatternGuards, CPP, UnicodeSyntax, OverloadedStrings, TypeSynonymInstances #-}
+import EduGame.Utils
+import EduGame.Render
+
 import Data.Char
 import Data.Maybe
 import Data.List (partition, intercalate)
@@ -23,7 +26,8 @@ c,e,m,n,s,a,p :: Topic
 c = Chi; e = Eng; m = Mat; n = Nat; s = Soc; a = Art; p = Phy
 
 data Card
-    = Student -- 學生
+    = EmptyStudent
+    | Student -- 學生
         { serial            :: Int        -- 序號
         , name              :: Text       -- 名稱
         , styles            :: [Style]    -- 學習風格
@@ -63,13 +67,6 @@ data Card
         }
     deriving Show
 
-say = putStrLn
-
--- instance ShowQ [Shape] where
---     showQ = concatMap showQ
-
-_Left_ = 9.6
-_Top_ = 13.65
 
 {-
 _main = do
@@ -88,10 +85,20 @@ end tell
 -}
 
 
-type X = Float
-type Y = Float
-renderCards :: X -> Y -> [Card] -> String
-renderCards = undefined
+renderCards :: X -> Y -> [Card] -> [Shape]
+renderCards _  _  []     = []
+renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ maybePageBreak ++ renderCards xo' yo' cs
+    where
+    adjustOffset s = s{ left = left s + xo, top = top s + yo }
+    (xo', yo', maybePageBreak)
+        | moveRight <- xo + cardWidth
+        , moveRight < paperWidth
+        = (moveRight, yo, [])
+        | moveDown <- yo + cardHeight
+        , moveDown < paperHeight
+        = (_Left_, moveDown, [])
+        | otherwise
+        = (_Left_, _Top_, [PageBreak])
 
 -- 「特殊」：有些牌有特殊能力，如解麻痺、引發興趣等。
 data Ability = Unparalyze | Inspire deriving Show
@@ -117,14 +124,27 @@ instance ShowQ Row where
 instance ShowQ [Row] where
     showQ xs = "[" ++ (intercalate ", " $ map showQ xs) ++ "]"
 
--- say [qq| { head $ parseTable s } |]
 main = do
     students     <- parseStudent `from` "students"
     actions      <- parseAction `from` "actions"
     environments <- parseEnvironment `from` "environments"
     skills       <- parseSkill `from` "skills"
     lessons      <- parseLesson `from` "lessons"
-    let _Cards_ = students ++ actions ++ environments ++ skills ++ lessons in print _Cards_
+    -- let _Cards_ = students ++ actions ++ environments ++ skills ++ lessons in print _Cards_
+    let _Cards_ = [EmptyStudent]
+    say [qq|
+
+tell application "OmniGraffle Professional 5"
+    tell document of front window
+        set count_canvas to count of canvases
+        set canvas_no to count_canvas
+        tell canvas canvas_no
+{ renderCards _Left_ _Top_ _Cards_ }
+        end tell
+    end tell
+end tell
+    |]
+    -- head students
 
 parser `from` table = do
     f <- T.readFile $ __Bin__ ++ "/v2/" ++ table ++ ".txt"
@@ -190,7 +210,6 @@ parseStudent r = Student
     , paralyses  = parseTopics r 'x' topicMap
     }
 
--- | 編號 | 名稱 | V | A | R | K | 教學風格 | 興趣力道 | 無興趣力道 | 學科 | 文學 | 外語 | 數學 | 自然 | 社會 | 藝術 | 健體 | 特殊效果 | 斜體字 |
 parseLesson :: Row -> Card
 parseLesson r = Lesson
     { serial       = r <<< "編號"
@@ -225,4 +244,11 @@ runParser parser text = case parse parser text of
         Done _ x -> x
         Fail _ _ e -> error e
         Partial {} -> error "Unterminated parse"
-        
+
+renderCard :: Card -> [Shape]
+renderCard EmptyStudent =
+    [ renderThreshold 0
+    , renderSerial _Brown_ 0
+    , innerRect _Brown_ (Color 0.9 0.85 0.8)
+    , outerRect
+    ]
