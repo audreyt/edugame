@@ -2,6 +2,7 @@
 module EduGame.Utils where
 import Data.Char
 import Data.List (partition)
+import Data.Text (Text, unpack)
 import System.Environment.FindBin
 import Text.InterpolatedString.Perl6
 
@@ -94,9 +95,9 @@ instance ShowQ Placement where
     showQ _ = ""
 
 data Body   = Body
-    { text  :: String
+    { text  :: Text
     , color :: Color
-    , font  :: String
+    , font  :: Text
     , size  :: Int
     , placement :: Placement
     } | BodyNone
@@ -112,7 +113,7 @@ instance ShowQ Shape where
 make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 44}, {top + 195}}, text: \{text: "{maybeNil strInterested strength}", font: "BookmanOldStyle-Bold", size: 22, alignment: center}{maybeVoid strInterested strength}}
 make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 107}, {top + 195}}, text: \{text: "{maybeNil strUninterested strength}", font: "BookmanOldStyle", size: 18, alignment: center}{maybeVoid strUninterested strength}, fill: radial fill}
 |]
-        SerialShape{..} -> [qq|make new shape at end of graphics with properties \{textPosition: \{0, 0.25}, text placement: bottom, draws shadow: false, corner radius: 2, size: \{21, 17}, side padding: 1, flipped vertically: true, stroke {serialColor} name: "HorizontalTriangle", vertical padding: 0, origin: \{{left + 160}, {top + 232}}, fill color: \{0, 0, 0}, textSize: \{0.875, 0.5}, text: \{text: "{if serialNumber < 10 then " " else ""}{ serialNumber }", font: "AmericanTypewriter-Condensed", size: 9, color: \{1, 1, 1}}, gradient color: \{0.25, 0.25, 0.25}}
+        SerialShape{..} -> [qq|make new shape at end of graphics with properties \{textPosition: \{0, 0.25}, text placement: bottom, draws shadow: false, corner radius: 2, size: \{18, 17}, side padding: 1, flipped vertically: true, stroke {serialColor} name: "HorizontalTriangle", vertical padding: 0, origin: \{{left + 163}, {top + 232}}, fill color: \{0.5, 0.5, 0.5}, textSize: \{0.875, 0.5}, text: \{text: "{if serialNumber < 10 then " " else ""}{ serialNumber }", font: "AmericanTypewriter-Condensed", size: 8, color: \{1, 1, 1}}, gradient color: \{0.5, 0.5, 0.5}}
 |]
         RuleShape1{..} -> [qq|$_begin $_origin size: \{ $cardWidth, $cardHeight } $_rule1
 |]
@@ -144,7 +145,7 @@ make new shape at end of graphics with properties \{draws shadow: false, corner 
             tell canvas canvas_no
         |]
         Threshold{..} -> [qq|
-make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{108, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 36}, {top + 195}}, text: \{text: "$threshold", font: "BookmanOldStyle-Bold", size: 22, alignment: center}}
+make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{108, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 36}, {top + 195}}, text: \{text: "$threshold", font: "BookmanOldStyle-Bold", size: 22, alignment: center}, fill: radial fill}
 |]
         where
         _rule1 = [q|, fill: linear fill, gradient color: {0.9,0.9,0.9}, draws shadow: false, corner radius: 15, side padding: 15, vertical padding: 0, text: {{text: "回合：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande"}, {text: "➩", font: "ZapfDingbatsITC"}, {text: " 抽 1 張牌", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "➩  ", font: "ZapfDingbatsITC"}, {text: "2 次行動", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "➩  ", font: "ZapfDingbatsITC"}, {text: "手牌多於 4 張則棄牌
@@ -167,6 +168,9 @@ maybeVoid :: (a -> Int) -> a -> String
 maybeVoid f x = case f x of
     -999 -> ", gradient color: {0, 0, 0}, fill: radial fill"
     _    -> ""
+
+instance ShowQ Text where
+    showQ = unpack
 
 instance ShowQ Body where
     showQ BodyNone = ""

@@ -13,12 +13,12 @@ import qualified Data.Text.IO as T
 import qualified Data.Attoparsec.Text as P
 
 -- 「特殊」：有些牌有特殊能力，如解麻痺、引發興趣等。
-data Ability = Unparalyze | Inspire deriving Show
+data Ability = Unparalyze | Inspire deriving (Show, Eq, Ord)
 
 data Style = V | A | R | K | Anti Style deriving Show
 
 -- 「學門」：遊戲有「數學」、「中文」、「英文」、「自然」、「社會」、「藝術」、「健體」七個學門。
-data Topic = Mat | Chi | Eng | Nat | Soc | Art | Phy deriving (Eq, Show, Enum, Bounded)
+data Topic = Mat | Chi | Eng | Nat | Soc | Art | Phy deriving (Eq, Ord, Show, Enum, Bounded)
 
 ---- 學門簡寫
 c,e,m,n,s,a,p :: Topic

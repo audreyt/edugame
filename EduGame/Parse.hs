@@ -3,7 +3,7 @@ module EduGame.Parse where
 import EduGame.Types
 import Data.Char
 import Data.Maybe
-import Data.List (partition, intercalate)
+import Data.List (partition, intercalate, sort)
 import System.Environment.FindBin
 import Text.InterpolatedString.Perl6
 import Data.Attoparsec.Text
@@ -94,8 +94,8 @@ parseStudent r = Student
     , threshold  = r <<< "蒙昧值"
     , flavor     = r <<< "斜體字"
     , styles     = parseStyles r styleMap
-    , interests  = parseTopics r 'a' topicMap
-    , paralyses  = parseTopics r 'x' topicMap
+    , interests  = sort (parseTopics r 'a' topicMap)
+    , paralyses  = sort (parseTopics r 'x' topicMap)
     }
 
 parseLesson :: Row -> Card
@@ -107,7 +107,7 @@ parseLesson r = Lesson
     , topics       = parseTopics r 'o' topicMap
     , interested   = r <<< "興趣力道"
     , uninterested = r <<< "無興趣力道"
-    , abilities    = r <<< "特殊效果"
+    , abilities    = sort (r <<< "特殊效果")
     }
 
 styleMap = [(V, "視"), (A, "聽"), (R, "讀"), (K, "作")]
