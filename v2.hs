@@ -18,7 +18,7 @@ output = do
     skills       <- parseSkill `from` "skills"
     courses      <- parseCourse `from` "courses"
     -- let _Cards_ = students ++ actions ++ environments ++ skills ++ courses in print _Cards_
-    let _Cards_ = [head skills] -- , head courses] -- take 1 actions -- environments -- students ++ actions
+    let _Cards_ = skills -- , head courses] -- take 1 actions -- environments -- students ++ actions
     return [qq|
 
 tell application "OmniGraffle Professional 5"
@@ -89,6 +89,16 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes ++ styleShapes ++
         | t <- orderParalyzed interests
         | n <- [((1 - toEnum (length interests)) / 2)..]
         ]
+renderCard Skill{..} =
+    [ renderFlavor flavor
+    , renderTitle name
+    , renderEffect effect _Green_ (Color 0.9 1 0.9)
+    , renderSerial _Green_ serial
+    , (innerRect _Green_ (Color 0.5 0.6 0.4))
+        { picture = Picture "skills" serial }
+    , outerRect { fill = FillColor (Color 0.95 1 0.95) }
+    ]
+
 
 renderCards :: X -> Y -> [Card] -> [Shape]
 renderCards _  _  []     = []
