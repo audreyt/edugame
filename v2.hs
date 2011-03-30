@@ -17,7 +17,7 @@ output = do
     skills       <- parseSkill `from` "skills"
     lessons      <- parseLesson `from` "lessons"
     -- let _Cards_ = students ++ actions ++ environments ++ skills ++ lessons in print _Cards_
-    let _Cards_ = students ++ actions
+    let _Cards_ = take 1 actions -- environments -- students ++ actions
     return [qq|
 
 tell application "OmniGraffle Professional 5"
@@ -46,9 +46,9 @@ renderCard Action{..} =
     , renderSerial _DarkRed_ serial
     , (innerRect _DarkRed_ (Color 0.6 0.5 0.5))
         { picture = Picture "actions" serial }
-    , outerRect
+    , outerRect { fill = FillColor (Color 1 0.9 0.9) }
     ]
-renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
+renderCard Student{..} = topicsShapes ++ nonTopicShapes ++ styleShapes ++
     [ renderFlavor flavor
     , renderName "" "cwTeXYen"
     , renderStudentName name "cwTeXYen"
