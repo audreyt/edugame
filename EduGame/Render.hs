@@ -112,7 +112,7 @@ renderTitle = (`renderStudentName` "cwTeXYen")
 renderName :: Name -> Font -> Shape
 renderName name fontName = mkShape
     { left            = 76
-    , top             = 33 -- 43
+    , top             = 35 -- 43
     , width           = 28
     , height          = 138
     , cornerRadius    = 0

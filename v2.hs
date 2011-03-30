@@ -18,7 +18,7 @@ output = do
     skills       <- parseSkill `from` "skills"
     courses      <- parseCourse `from` "courses"
     -- let _Cards_ = students ++ actions ++ environments ++ skills ++ courses in print _Cards_
-    let _Cards_ = [head skills, head courses] -- take 1 actions -- environments -- students ++ actions
+    let _Cards_ = environments -- [head skills, head courses] -- take 1 actions -- environments -- students ++ actions
     return [qq|
 
 tell application "OmniGraffle Professional 5"
@@ -44,7 +44,9 @@ renderCard Environment{..} =
     , renderName name "LiGothicMed"
     , (renderEffect effect (Color 0.1 0.6 0.1) _LightGreen_){ stroke = StrokeDotted }
     , renderSerial _LightGreen_ serial
-    , outerRect{ fill = FillRadialOut (Color 0.5 0.7 0.4) }
+    , outerRect
+        { fill = FillRadialOut (Color 0.5 0.7 0.4)
+        , picture = Picture "environments" serial }
     ]
 renderCard Action{..} =
     [ renderFlavor flavor
