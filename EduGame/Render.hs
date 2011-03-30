@@ -37,7 +37,7 @@ mkShape = Shape
     , picture         = PictureNone
     }
 
-renderPower :: Int -> Int -> Shape -- -> Color -> Color -> Shape
+renderPower :: Power -> Power -> Shape -- -> Color -> Color -> Shape
 renderPower i u = Power
     { left            = 0
     , top             = 0

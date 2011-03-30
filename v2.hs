@@ -17,8 +17,7 @@ output = do
     environments <- parseEnvironment `from` "environments"
     skills       <- parseSkill `from` "skills"
     courses      <- parseCourse `from` "courses"
-    -- let _Cards_ = students ++ actions ++ environments ++ skills ++ courses in print _Cards_
-    let _Cards_ = skills -- , head courses] -- take 1 actions -- environments -- students ++ actions
+    let _Cards_ = students ++ actions ++ environments ++ skills ++ courses
     return [qq|
 
 tell application "OmniGraffle Professional 5"
@@ -98,6 +97,21 @@ renderCard Skill{..} =
         { picture = Picture "skills" serial }
     , outerRect { fill = FillColor (Color 0.95 1 0.95) }
     ]
+renderCard Course{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
+    [ renderFlavor flavor
+    , renderTitle name
+    , renderPower interested uninterested
+    , renderSerial _Blue_ serial
+    , (innerRect _Blue_ _GrayBlue_)
+        { picture = Picture "courses" serial }
+    , outerRect
+    ]
+    where
+    styleShapes = map styleIcon styles
+    abilityShapes = [ renderAbility t n | t <- abilities | n <- [((1 - toEnum (length abilities)) / 2)..] ]
+    topicsShapes = case topics of
+        [] -> [ renderAllTopics ]
+        _  -> [ renderTopic t n | t <- topics | n <- [((1 - toEnum (length topics)) / 2)..] ]
 
 
 renderCards :: X -> Y -> [Card] -> [Shape]
@@ -149,3 +163,32 @@ renderEffect effect strokeColor fillColor = mkShape
         , size  = 10
         }
     }
+
+renderAllTopics = (topicIcon Chi)
+    { body = mkIcon '∞' 0 0 0 "AmericanTypewriter"
+    , fill = FillRadial (Color 0.8 0.8 0.9)
+    }
+
+renderAbility :: Ability -> Float -> Shape
+renderAbility ability n = icon{ top = top + n * (height + 5) }
+    where
+    icon@Shape{..} = abilityIcon ability
+
+abilityIcon :: Ability -> Shape
+abilityIcon topic = mkShape
+    { left            = 154
+    , top             = 101.5
+    , width           = 16
+    , height          = 21
+    , cornerRadius    = 5
+    , verticalPadding = 12
+    , fill            = FillWhite
+    , stroke          = StrokeWhite
+    , shadow          = ShadowBottom
+    , body            = abilityText topic
+    }
+
+abilityText :: Ability -> Body
+-- abilityText Look = mkIcon '✆' 0.2 0.7 0.2 "ArialUnicodeMS"
+abilityText Inspire = mkIcon '♥' 0.2 0.2 0.7 "ArialUnicodeMS"
+abilityText Unparalyze = mkIcon '✙' 0.7 0.2 0.2 "ArialUnicodeMS"

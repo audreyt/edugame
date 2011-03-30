@@ -20,6 +20,8 @@ data Style = V | A | R | K | Anti Style deriving Show
 -- 「學門」：遊戲有「數學」、「中文」、「英文」、「自然」、「社會」、「藝術」、「健體」七個學門。
 data Topic = Mat | Chi | Eng | Nat | Soc | Art | Phy deriving (Eq, Ord, Show, Enum, Bounded)
 
+type Power = Maybe Int
+
 ---- 學門簡寫
 c,e,m,n,s,a,p :: Topic
 c = Chi; e = Eng; m = Mat; n = Nat; s = Soc; a = Art; p = Phy
@@ -60,8 +62,8 @@ data Card
         { serial            :: Int        -- 序號
         , name              :: Text       -- 名稱
         , styles            :: [Style]    -- 學習風格
-        , interested        :: Maybe Int  -- 成就點數(有興趣時)
-        , uninterested      :: Maybe Int  -- 成就點數(無興趣時)
+        , interested        :: Power      -- 成就點數(有興趣時)
+        , uninterested      :: Power      -- 成就點數(無興趣時)
         , topics            :: [Topic]    -- 學門
         , abilities         :: [Ability]  -- 特殊能力
         , flavor            :: Text       -- 斜體字

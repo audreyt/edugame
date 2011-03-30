@@ -118,8 +118,8 @@ data Body   = Body
     } | BodyNone
 
 data Strength = MkStrength
-    { strInterested :: Int
-    , strUninterested :: Int
+    { strInterested :: Power
+    , strUninterested :: Power
     }
 
 instance ShowQ Shape where
@@ -174,15 +174,13 @@ make new shape at end of graphics with properties \{draws shadow: false, corner 
         _begin = "make new shape at end of graphics with properties {"
         _origin = [qq|origin: \{{ left shape }, { top shape }}, |];
 
-maybeNil :: (a -> Int) -> a -> String
-maybeNil f x = case f x of
-    -999 -> ""
-    val  -> show val
+maybeNil :: (a -> Power) -> a -> String
+maybeNil f (f -> Just val) = show val
+maybeNil _ _ = ""
 
-maybeVoid :: (a -> Int) -> a -> String
-maybeVoid f x = case f x of
-    -999 -> ", gradient color: {0, 0, 0}, fill: radial fill"
-    _    -> ""
+maybeVoid :: (a -> Power) -> a -> String
+maybeVoid f (f -> Just val) = ""
+maybeVoid _ _ = ", gradient color: {0, 0, 0}, fill: radial fill"
 
 instance ShowQ Text where
     showQ = unpack
