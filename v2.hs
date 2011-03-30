@@ -18,7 +18,7 @@ output = do
     skills       <- parseSkill `from` "skills"
     lessons      <- parseLesson `from` "lessons"
     -- let _Cards_ = students ++ actions ++ environments ++ skills ++ lessons in print _Cards_
-    let _Cards_ = [head actions, head students] -- take 1 actions -- environments -- students ++ actions
+    let _Cards_ = [head environments] -- take 1 actions -- environments -- students ++ actions
     return [qq|
 
 tell application "OmniGraffle Professional 5"
@@ -39,9 +39,16 @@ renderCard EmptyStudent = map styleIcon [V,A,R,K] ++
     -- , innerRect _Brown_ (Color 0.9 0.85 0.8)
     , outerRect
     ]
+renderCard Environment{..} =
+    [ renderFlavor flavor
+    , renderName name "LiGothicMed"
+    , (renderEffect effect (Color 0.1 0.6 0.1) _LightGreen_){ stroke = StrokeDotted }
+    , renderSerial _LightGreen_ serial
+    , outerRect{ fill = FillRadialOut (Color 0.5 0.7 0.4) }
+    ]
 renderCard Action{..} =
     [ renderFlavor flavor
-    , renderStudentName name "cwTeXYen"
+    , renderTitle name
     , renderTurns turns
     , renderEffect effect _DarkRed_ (Color 1 0.9 0.9)
     , renderSerial _DarkRed_ serial
@@ -51,8 +58,7 @@ renderCard Action{..} =
     ]
 renderCard Student{..} = topicsShapes ++ nonTopicShapes ++ styleShapes ++
     [ renderFlavor flavor
-    , renderName "" "cwTeXYen"
-    , renderStudentName name "cwTeXYen"
+    , renderTitle name
     , renderThreshold threshold
     , renderSerial _Brown_ serial
     , (innerRect _Brown_ (Color 0.9 0.85 0.8))
