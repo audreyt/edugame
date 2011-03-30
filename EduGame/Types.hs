@@ -1,12 +1,12 @@
 {-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances, PatternGuards, CPP, UnicodeSyntax #-}
-module EduGame.Types where
+module EduGame.Types (module EduGame.Types, module Data.Text) where
 import Data.Char
 import Data.Maybe
 import Data.List (partition, intercalate)
 import System.Environment.FindBin
 import Text.InterpolatedString.Perl6
 import Data.Attoparsec.Text
-import Data.Text (Text)
+import Data.Text (Text, pack, unpack)
 import Control.Applicative
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -24,13 +24,15 @@ data Topic = Mat | Chi | Eng | Nat | Soc | Art | Phy deriving (Eq, Ord, Show, En
 c,e,m,n,s,a,p :: Topic
 c = Chi; e = Eng; m = Mat; n = Nat; s = Soc; a = Art; p = Phy
 
+type Serial = Int
+type Threshold = Int
 data Card
     = EmptyStudent
     | Student -- 學生
-        { serial            :: Int        -- 序號
+        { serial            :: Serial     -- 序號
         , name              :: Text       -- 名稱
         , styles            :: [Style]    -- 學習風格
-        , threshold         :: Int        -- 蒙昧值
+        , threshold         :: Threshold  -- 蒙昧值
         , interests         :: [Topic]    -- 有興趣之學門
         , paralyses         :: [Topic]    -- 有麻痺之學門
         , flavor            :: Text       -- 斜體字

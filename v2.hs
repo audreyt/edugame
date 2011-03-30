@@ -17,7 +17,7 @@ output = do
     skills       <- parseSkill `from` "skills"
     lessons      <- parseLesson `from` "lessons"
     -- let _Cards_ = students ++ actions ++ environments ++ skills ++ lessons in print _Cards_
-    let _Cards_ = students
+    let _Cards_ = students ++ actions
     return [qq|
 
 tell application "OmniGraffle Professional 5"
@@ -38,6 +38,16 @@ renderCard EmptyStudent = map styleIcon [V,A,R,K] ++
     -- , innerRect _Brown_ (Color 0.9 0.85 0.8)
     , outerRect
     ]
+renderCard Action{..} =
+    [ renderFlavor flavor
+    , renderStudentName name "cwTeXYen"
+    , renderTurns turns
+    , renderEffect effect _DarkRed_ (Color 1 0.9 0.9)
+    , renderSerial _DarkRed_ serial
+    , (innerRect _DarkRed_ (Color 0.6 0.5 0.5))
+        { picture = Picture "actions" serial }
+    , outerRect
+    ]
 renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
     [ renderFlavor flavor
     , renderName "" "cwTeXYen"
@@ -45,7 +55,8 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes  ++ styleShapes ++
     , renderThreshold threshold
     , renderSerial _Brown_ serial
     , (innerRect _Brown_ (Color 0.9 0.85 0.8))
-        { picture = PictureRelative ("v2/images/students/" ++ show serial ++ ".jpg") }
+        { picture = Picture "students" serial }
+       --  ("v2/images/students/" ++ show serial ++ ".jpg") }
     , outerRect
     ]
     where
@@ -87,3 +98,37 @@ renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ maybePageBreak ++ 
         = (_Left_, _Top_, [PageBreak])
 
 
+renderTurns :: Int -> Shape
+renderTurns turns = mkShape
+    { left            = 127
+    , top             = 100
+    , width           = 40
+    , height          = 22
+    , cornerRadius    = 3
+    , stroke          = StrokeSingle (Color 0.6 0.3 0.3)
+    , fill            = FillWhite
+    , verticalPadding = 4
+    , body            = mkBody
+        { text  = pack (show turns ++ " ⏎")
+        , font  = "Gentium"
+        , size  = 15
+        , placement = PlacementTop
+        }
+    }
+
+renderEffect :: Text -> Color -> Color -> Shape
+renderEffect effect strokeColor fillColor = mkShape
+    { left            = 4
+    , top             = 197
+    , width           = 168
+    , height          = 25
+    , stroke          = StrokeSingle strokeColor
+    , shadow          = ShadowBottom
+    , fill            = FillColor fillColor
+    , cornerRadius    = 3
+    , body            = mkBody
+        { text  = effect
+        , font  = "LiGothicMed"
+        , size  = 10
+        }
+    }

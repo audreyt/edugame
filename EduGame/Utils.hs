@@ -1,14 +1,16 @@
-{-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances, PatternGuards, CPP, UnicodeSyntax #-}
+{-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances, PatternGuards, CPP, UnicodeSyntax, ViewPatterns #-}
 module EduGame.Utils where
+import EduGame.Types
 import Data.Char
 import Data.List (partition)
 import Data.Text (Text, unpack)
 import System.Environment.FindBin
 import Text.InterpolatedString.Perl6
+import System.FilePath.Glob
+import System.IO.Unsafe (unsafePerformIO)
 
 type X = Float
 type Y = Float
-type Threshold = Int
 
 -- Constants
 cardWidth, cardHeight, paperWidth, paperHeight :: Float
@@ -74,11 +76,23 @@ instance ShowQ Shadow where
     showQ ShadowNone = "draws shadow: false, "
     showQ ShadowMiddle = "shadow vector: {0, 0}, shadow fuzziness: 4,"
 
-data Picture = PictureRelative FilePath | PictureNone
+data Picture = Picture FilePath Serial | PictureNone
+
+findPicture :: Picture -> Maybe FilePath
+findPicture (Picture path serialNum) = case globbed of
+    (((pic:_):_),_) -> Just pic
+    _               -> Nothing
+    where
+    serial  = case serialNum of
+        0   -> ""
+        _   -> ('/':show serialNum)
+    pattern = compile [qq|v2/images/$path$serial.*|]
+    globbed = unsafePerformIO (globDir [pattern] __Bin__)
+findPicture _ = Nothing
 
 instance ShowQ Picture where
-    showQ (PictureRelative path) = [qq|image sizing: stretched, image: "$__Bin__/$path",|]
-    showQ PictureNone = ""
+    showQ (findPicture -> Just img) = [qq|image sizing: stretched, image: "$img",|]
+    showQ _ = ""
 
 data Color = Color { red :: Float, green :: Float, blue :: Float } deriving (Show, Eq)
 

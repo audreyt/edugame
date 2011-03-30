@@ -60,28 +60,28 @@ styleIcon V = mkShape
     , height  = 14
     , left    = 5
     , top     = 10
-    , picture = PictureRelative "v2/images/v.png"
+    , picture = Picture "v" 0
     }
 styleIcon A = mkShape
     { width   = 23
     , height  = 33
     , left    = 5
     , top     = 195
-    , picture = PictureRelative "v2/images/a.png"
+    , picture = Picture "a" 0
     }
 styleIcon R = mkShape
     { width   = 23
     , height  = 17
     , left    = 152
     , top     = 10
-    , picture = PictureRelative "v2/images/r.png"
+    , picture = Picture "r" 0
     }
 styleIcon K = mkShape
     { width   = 23
     , height  = 33
     , left    = 152
     , top     = 195
-    , picture = PictureRelative "v2/images/k.png"
+    , picture = Picture "k" 0
     }
 styleIcon (Anti (Anti x)) = styleIcon x
 styleIcon (Anti x) = (styleIcon x)
