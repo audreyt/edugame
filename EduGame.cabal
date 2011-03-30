@@ -1,7 +1,7 @@
 Name: cpphs
 Version: 1.9
 Copyright: 2009-2010, Bestian Tang
-Build-Depends: base < 5, haskell98, interpolatedstring-perl6, FindBin, text, attoparsec-text
+Build-Depends: base < 5, haskell98, interpolatedstring-perl6, FindBin, text, attoparsec-text, Glob
 Author: Bestian Tang, Audrey Tang
 Maintainer: Audrey Tang <audreyt@audreyt.org>
 Synopsis: An educational card game about education.
