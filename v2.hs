@@ -5,6 +5,7 @@ import EduGame.Render
 import EduGame.Parse
 import Text.InterpolatedString.Perl6
 import Data.List (partition)
+import qualified Data.Text as T
 
 main = putStrLn =<< output
 
@@ -17,7 +18,7 @@ output = do
     skills       <- parseSkill `from` "skills"
     lessons      <- parseLesson `from` "lessons"
     -- let _Cards_ = students ++ actions ++ environments ++ skills ++ lessons in print _Cards_
-    let _Cards_ = take 1 actions -- environments -- students ++ actions
+    let _Cards_ = [head actions, head students] -- take 1 actions -- environments -- students ++ actions
     return [qq|
 
 tell application "OmniGraffle Professional 5"
@@ -46,7 +47,7 @@ renderCard Action{..} =
     , renderSerial _DarkRed_ serial
     , (innerRect _DarkRed_ (Color 0.6 0.5 0.5))
         { picture = Picture "actions" serial }
-    , outerRect { fill = FillColor (Color 1 0.9 0.9) }
+    , outerRect { fill = FillColor (Color 1 0.95 0.95) }
     ]
 renderCard Student{..} = topicsShapes ++ nonTopicShapes ++ styleShapes ++
     [ renderFlavor flavor
@@ -97,7 +98,6 @@ renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ maybePageBreak ++ 
         | otherwise
         = (_Left_, _Top_, [PageBreak])
 
-
 renderTurns :: Int -> Shape
 renderTurns turns = mkShape
     { left            = 127
@@ -105,12 +105,12 @@ renderTurns turns = mkShape
     , width           = 40
     , height          = 22
     , cornerRadius    = 3
-    , stroke          = StrokeSingle (Color 0.6 0.3 0.3)
+    , stroke          = StrokeMedium (Color 0.6 0.3 0.3)
     , fill            = FillWhite
     , verticalPadding = 4
     , body            = mkBody
-        { text  = pack (show turns ++ " ⏎")
-        , font  = "Gentium"
+        { text  = ("０１２３４５６７８９" `T.index` turns) `T.cons` "⏎"
+        , font  = "LiGothicMed" -- "BookmanOldStyle-Bold" -- Gentium
         , size  = 15
         , placement = PlacementTop
         }
@@ -118,7 +118,7 @@ renderTurns turns = mkShape
 
 renderEffect :: Text -> Color -> Color -> Shape
 renderEffect effect strokeColor fillColor = mkShape
-    { left            = 4
+    { left            = 6
     , top             = 197
     , width           = 168
     , height          = 25

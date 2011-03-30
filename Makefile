@@ -7,7 +7,7 @@ ghci::
 	ghci v2.hs
 
 tags::
-	hasktags -c v2.hs EduCards/*hs
+	hasktags -c v2.hs EduGame/*hs
 
 update::
 	#perl update.pl ### broken

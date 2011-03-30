@@ -67,6 +67,7 @@ instance ShowQ Stroke where
     showQ StrokeBlack = "stroke color: {0, 0, 0},"
     showQ StrokeBlackThick = "stroke color: {0, 0, 0}, thickness: 10,"
     showQ (StrokeThick color) = [qq|stroke $color thickness:15,|]
+    showQ (StrokeMedium color) = [qq|stroke $color thickness:3,|]
     showQ (StrokeDouble color) = [qq|stroke $color thickness:5, double stroke:true,|]
     showQ (StrokeSingle color) = [qq|stroke $color|]
     showQ (StrokeDoubleDotted color) = [qq|stroke $color thickness:5, double stroke:true, stroke pattern: 24, |]
@@ -99,7 +100,7 @@ data Color = Color { red :: Float, green :: Float, blue :: Float } deriving (Sho
 instance ShowQ Color where
     showQ Color{..} = [qq|color: \{$red, $green, $blue}, |]
 
-data Stroke = StrokeWhite | StrokeBlack | StrokeBlackThick | StrokeParalyzed | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeThick Color | StrokeNone deriving Eq
+data Stroke = StrokeWhite | StrokeBlack | StrokeBlackThick | StrokeParalyzed | StrokeDotted | StrokeDouble Color | StrokeDoubleDotted Color | StrokeSingle Color | StrokeThick Color | StrokeMedium Color | StrokeNone deriving Eq
 data Shadow = ShadowBottom | ShadowMiddle | ShadowNone
 data Placement = PlacementTop | PlacementMiddle | PlacementBottom
 
