@@ -56,7 +56,7 @@ data Card
         , effect            :: Text       -- 效果
         , flavor            :: Text       -- 斜體字
         }
-    | Lesson -- 教學
+    | Course -- 教學
         { serial            :: Int        -- 序號
         , name              :: Text       -- 名稱
         , styles            :: [Style]    -- 學習風格

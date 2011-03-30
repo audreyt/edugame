@@ -98,8 +98,8 @@ parseStudent r = Student
     , paralyses  = sort (parseTopics r 'x' topicMap)
     }
 
-parseLesson :: Row -> Card
-parseLesson r = Lesson
+parseCourse :: Row -> Card
+parseCourse r = Course
     { serial       = r <<< "編號"
     , name         = r <<< "名稱"
     , flavor       = r <<< "斜體字"

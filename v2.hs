@@ -16,9 +16,9 @@ output = do
     actions      <- parseAction `from` "actions"
     environments <- parseEnvironment `from` "environments"
     skills       <- parseSkill `from` "skills"
-    lessons      <- parseLesson `from` "lessons"
-    -- let _Cards_ = students ++ actions ++ environments ++ skills ++ lessons in print _Cards_
-    let _Cards_ = [head environments] -- take 1 actions -- environments -- students ++ actions
+    courses      <- parseCourse `from` "courses"
+    -- let _Cards_ = students ++ actions ++ environments ++ skills ++ courses in print _Cards_
+    let _Cards_ = [head skills, head courses] -- take 1 actions -- environments -- students ++ actions
     return [qq|
 
 tell application "OmniGraffle Professional 5"
