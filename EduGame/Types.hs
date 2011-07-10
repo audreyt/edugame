@@ -37,6 +37,7 @@ data Card
         , threshold         :: Threshold  -- 蒙昧值
         , interests         :: [Topic]    -- 有興趣之學門
         , paralyses         :: [Topic]    -- 有麻痺之學門
+        , effect            :: Text       -- 效果
         , flavor            :: Text       -- 斜體字
         }
     | Action -- 行動

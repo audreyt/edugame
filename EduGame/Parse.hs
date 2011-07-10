@@ -93,6 +93,7 @@ parseStudent r = Student
     , name       = r <<< "名稱"
     , threshold  = r <<< "蒙昧值"
     , flavor     = r <<< "斜體字"
+    , effect     = r <<< "效果"
     , styles     = parseStyles r styleMap
     , interests  = sort (parseTopics r 'a' topicMap)
     , paralyses  = sort (parseTopics r 'x' topicMap)

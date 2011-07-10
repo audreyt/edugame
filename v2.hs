@@ -61,6 +61,7 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes ++ styleShapes ++
     [ renderFlavor flavor
     , renderTitle name
     , renderThreshold threshold
+    , renderEffect effect _DarkRed_ (Color 1 0.9 0.9)
     , renderSerial _Brown_ serial
     , (innerRect _Brown_ (Color 0.9 0.85 0.8))
         { picture = Picture "students" serial }
