@@ -16,9 +16,16 @@ import qualified Data.Attoparsec.Text as P
 parseTable :: Text -> [[(Text, Text)]]
 parseTable s = [hs `zip` proc b | b <- tbody, not (T.null b) ]
     where
-    (thead:tbody) = map T.strip $ T.lines s
+    (thead:tbody) = map T.strip . reverse . foldl multiLines [] $ T.lines s
     proc = tail . map T.strip . T.splitOn "|"
     hs = proc thead
+
+multiLines :: [Text] -> Text -> [Text]
+multiLines [] row = [row]
+multiLines rows@(r:rs) row
+    | T.null row = rows
+    | '|' <- T.head row = (row:rows)
+    | otherwise = (T.concat [r, "\n", row] : rs)
 
 
 type Row = [(Text, Text)]
@@ -41,7 +48,7 @@ parser `from` table = do
 (<<<) :: Grok a => Row -> Text -> a
 row <<< label = case lookup label row of
     Just text -> grok (T.strip text)
-    _         -> error $ show (row, label)
+    _         -> error $ "Cannot find " ++ showQ label ++ " from " ++ showQ row
 
 class Grok a where
     grok :: Text -> a
@@ -51,7 +58,7 @@ class Grok a where
 
 instance Grok String where parser = fmap T.unpack $ P.takeWhile (const True)
 instance Grok Text where parser = P.takeWhile (const True)
-instance Grok Int where parser = decimal
+instance Grok Int where parser = decimal <|> pure 0
 instance Grok (Maybe Int) where parser = fmap Just decimal <|> pure Nothing
 instance Grok (Style -> Maybe Style) where
     parser = (char 'a' *> pure Just)
@@ -123,7 +130,7 @@ parseTopics r ch pairs = catMaybes $ map parsePair pairs
     where
     parsePair (topic, label) = case lookup label r of
         Just text -> fmap (const topic) $ T.find (== ch) text
-        _         -> error $ show (r, label)
+        _         -> error $ showQ (r, label)
 
 runParser :: Parser a -> Text -> a
 runParser parser text = case parse parser text of

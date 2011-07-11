@@ -160,7 +160,7 @@ make new shape at end of graphics with properties \{draws shadow: false, corner 
             tell canvas canvas_no
         |]
         Threshold{..} -> [qq|
-make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{108, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 36}, {top + 195}}, text: \{text: "$threshold", font: "BookmanOldStyle-Bold", size: 22, alignment: center}, fill: radial fill}
+make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{108, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 36}, {top + 165}}, text: \{text: "$threshold", font: "BookmanOldStyle-Bold", size: 22, alignment: center}, fill: radial fill}
 |]
         where
         _rule1 = [q|, fill: linear fill, gradient color: {0.9,0.9,0.9}, draws shadow: false, corner radius: 15, side padding: 15, vertical padding: 0, text: {{text: "回合：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande"}, {text: "➩", font: "ZapfDingbatsITC"}, {text: " 抽 1 張牌", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "➩  ", font: "ZapfDingbatsITC"}, {text: "2 次行動", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "➩  ", font: "ZapfDingbatsITC"}, {text: "手牌多於 4 張則棄牌

@@ -65,8 +65,8 @@ styleIcon V = mkShape
 styleIcon A = mkShape
     { width   = 23
     , height  = 33
-    , left    = 5
-    , top     = 195
+    , left    = 33 -- 5
+    , top     = 1 -- 195
     , picture = Picture "a" 0
     }
 styleIcon R = mkShape
@@ -79,8 +79,8 @@ styleIcon R = mkShape
 styleIcon K = mkShape
     { width   = 23
     , height  = 33
-    , left    = 152
-    , top     = 195
+    , left    = 125 -- 152
+    , top     = 3 -- 195
     , picture = Picture "k" 0
     }
 styleIcon (Anti (Anti x)) = styleIcon x
