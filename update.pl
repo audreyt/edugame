@@ -2,7 +2,7 @@ use strict;
 use encoding 'utf8';
 use FindBin '$Bin';
 
-$_ = `curl -s http://www.socialtext.net/data/workspaces/audreyt/pages/edugame?accept=text/x.socialtext-wiki`;
+$_ = `curl -s https://www.socialtext.net/data/workspaces/audreyt/pages/edugame?accept=text/x.socialtext-wiki`;
 
 my %map = qw(
     students 學生
