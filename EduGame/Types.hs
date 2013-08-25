@@ -69,4 +69,10 @@ data Card
         , abilities         :: [Ability]  -- 特殊能力
         , flavor            :: Text       -- 斜體字
         }
+    | Goal -- 勝利目標
+        { serial            :: Int        -- 序號
+        , name              :: Text       -- 名稱
+        , effect            :: Text       -- 效果
+        , flavor            :: Text       -- 斜體字
+        }
     deriving Show

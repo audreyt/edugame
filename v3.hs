@@ -17,6 +17,7 @@ output = do
     environments <- parseEnvironment `from` "environments"
     skills       <- parseSkill `from` "skills"
     courses      <- parseCourse `from` "courses"
+    goals        <- parseGoal `from` "goals"
     let _Cards_ = students ++ actions ++ environments ++ skills ++ courses
     return [qq|
 
@@ -113,6 +114,15 @@ renderCard Course{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
     topicsShapes = case topics of
         [] -> [ renderAllTopics ]
         _  -> [ renderTopic t n | t <- topics | n <- [((1 - toEnum (length topics)) / 2)..] ]
+renderCard Goal{..} =
+    [ renderFlavor flavor
+    , renderTitle name
+    , renderEffect effect _Blue_ (Color 0.9 1 1)
+    , renderSerial _Green_ serial
+    , (innerRect _Green_ (Color 0.5 0.6 0.4))
+        { picture = Picture "goals" serial }
+    , outerRect { fill = FillColor (Color 0.95 1 0.95) }
+    ]
 
 
 renderCards :: X -> Y -> [Card] -> [Shape]

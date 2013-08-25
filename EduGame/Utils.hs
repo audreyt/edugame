@@ -87,7 +87,7 @@ findPicture (Picture path serialNum) = case globbed of
     serial  = case serialNum of
         0   -> ""
         _   -> ('/':show serialNum)
-    pattern = compile [qq|v2/images/$path$serial.*|]
+    pattern = compile [qq|v3/images/$path$serial.*|]
     globbed = unsafePerformIO (globDir [pattern] __Bin__)
 findPicture _ = Nothing
 

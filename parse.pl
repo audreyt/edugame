@@ -82,24 +82,23 @@ my $lessons = parse {
 .
 } "lessons";
 
-my $assistants = parse {
-    my ($serial, $name, $styles, $topics, $abilities, $cost, $flavor) = @_;
-    $styles = join ',', map {/[a-z]/ ? "Anti ".uc($_) : $_ } sort split(//, $styles);
+my $goals = parse {
+    my ($serial, $name, $effect, $flavor) = @_;
 
     $flavor = splitWords($flavor);
-    $topics = join ',', sort split(//, lc $topics);
-    $abilities = join ',', sort split(//, lc $abilities);
-    
+    $effect = splitEffectWords($effect);
+
     return << ".";
-    , Assistant $serial "$name" [$styles] [$topics] [$abilities] $cost
+    , Goal $serial "$name" "$effect"
         "$flavor"
 .
-} "assistants";
+
+} "goals";
 
 #######
 
 open FH, '>:utf8', 'data.hs';
-print FH $actions, $students, $lessons, $skills, $environments, $assistants;
+print FH $actions, $students, $lessons, $skills, $environments, $goals;
 close FH;
 
 #######

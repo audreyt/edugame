@@ -117,6 +117,14 @@ parseCourse r = Course
     , uninterested = r <<< "無興趣力道"
     , abilities    = sort (r <<< "特殊效果")
     }
+    
+parseGoal :: Row -> Card
+parseGoal r = Goal
+    { serial     = r <<< "編號"
+    , name       = r <<< "名稱"
+    , effect     = r <<< "效果"
+    , flavor     = r <<< "斜體字"
+    }
 
 styleMap = [(V, "視"), (A, "聽"), (R, "讀"), (K, "作")]
 topicMap = [(c, "文學"), (e, "外語"), (m, "數學"), (n, "自然"), (s, "社會"), (a, "藝術"), (p, "健體")]

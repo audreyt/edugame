@@ -1,13 +1,13 @@
 all::
 	@-mkdir -p /Library/Scripts/_OmniGraffle
-	runghc -O0 v2.hs > /Library/Scripts/_OmniGraffle/1.scpt
+	runghc -O0 v3.hs > /Library/Scripts/_OmniGraffle/1.scpt
 	open /Library/Scripts/_OmniGraffle/1.scpt 
 
 ghci::
-	ghci v2.hs
+	ghci v3.hs
 
 tags::
-	hasktags -c v2.hs EduGame/*hs
+	hasktags -c v3.hs EduGame/*hs
 
 update::
 	perl update.pl
