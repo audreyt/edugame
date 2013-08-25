@@ -10,4 +10,4 @@ tags::
 	hasktags -c v2.hs EduGame/*hs
 
 update::
-	#perl update.pl ### broken
+	perl update.pl
