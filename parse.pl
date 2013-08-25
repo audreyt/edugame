@@ -127,7 +127,7 @@ sub splitWords {
 
 sub parse (&$) {
     my ($code, $type) = @_;
-    open my $fh, '<:utf8', "$Bin/data/$type.txt" or die $!;
+    open my $fh, '<:utf8', "$Bin/data_new/$type.txt" or die $!;
 
     my $out = << ".";
 
