@@ -114,8 +114,8 @@ parseCourse r = Course
     , flavor       = r <<< "斜體字"
     , styles       = parseStyles r styleMap
     , topics       = parseTopics r 'o' topicMap
-    , interested   = r <<< "興趣力道"
-    , uninterested = r <<< "無興趣力道"
+    , interested   = r <<< "力道"
+    , affinity = r <<< "親和力"
     , abilities    = sort (r <<< "特殊效果")
     }
     
@@ -133,7 +133,7 @@ styleMap = [(V, "視"), (A, "聽"), (R, "讀"), (K, "作")]
 
 topicMap = [(c, "文史哲"), (n, "數理"), (s, "社會"), (a, "藝能")]
 
-abilityMap = [(Inspire, 'I'), (Unparalyze, 'U')]
+abilityMap = [(Inspire, 'I'), (Unparalyze, 'U'), (Single, 'S'), (Group, 'G')]
 
 parseStyles r pairs = catMaybes $ map parsePair pairs
     where

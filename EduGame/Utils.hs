@@ -1,3 +1,4 @@
+
 {-# LANGUAGE QuasiQuotes, NamedFieldPuns, RecordWildCards, ParallelListComp, FlexibleInstances, PatternGuards, CPP, UnicodeSyntax, ViewPatterns #-}
 module EduGame.Utils where
 import EduGame.Types
@@ -119,14 +120,15 @@ data Body   = Body
 
 data Strength = MkStrength
     { strInterested :: Power
-    , strUninterested :: Power
+    , strAffinity :: Power
     }
 
 instance ShowQ Shape where
+
     showQ shape = case shape of
         Power{..} -> [qq|
-make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 44}, {top + 195}}, text: \{text: "{maybeNil strInterested strength}", font: "BookmanOldStyle-Bold", size: 22, alignment: center}{maybeVoid strInterested strength}}
-make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 107}, {top + 195}}, text: \{text: "{maybeNil strUninterested strength}", font: "BookmanOldStyle", size: 18, alignment: center}{maybeVoid strUninterested strength}, fill: radial fill}
+make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 120}, {top + 35}}, text: \{text: "{maybeNil strInterested strength}", font: "BookmanOldStyle-Bold", size: 22, alignment: center}{maybeVoid strInterested strength}}
+make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{28, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 44}, {top + 195}}, text: \{text: "{maybeNil strAffinity strength}", font: "BookmanOldStyle", size: 18, alignment: center}{maybeVoid strAffinity strength}, fill: radial fill}
 |]
         SerialShape{..} -> [qq|make new shape at end of graphics with properties \{textPosition: \{0, 0.25}, text placement: bottom, draws shadow: false, corner radius: 2, size: \{18, 17}, side padding: 1, flipped vertically: true, stroke {serialColor} name: "HorizontalTriangle", vertical padding: 0, origin: \{{left + 163}, {top + 232}}, fill color: \{0.5, 0.5, 0.5}, textSize: \{0.875, 0.5}, text: \{text: "{if serialNumber < 10 then " " else ""}{ serialNumber }", font: "AmericanTypewriter-Condensed", size: 8, color: \{1, 1, 1}}, gradient color: \{0.5, 0.5, 0.5}}
 |]
@@ -160,14 +162,11 @@ make new shape at end of graphics with properties \{draws shadow: false, corner 
             tell canvas canvas_no
         |]
         Threshold{..} -> [qq|
-make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{39, 39}, side padding: 0, vertical padding: 0, origin: \{{left + 36}, {top + 165}}, text: \{text: "$threshold", font: "BookmanOldStyle-Bold", size: 22, alignment: center}, fill: radial fill}
-|]
-{-  ==bug here== 
-		Negative{..} -> [qq|
-make new shape at end of graphics with properties \{draws shadow: false, corner radius: 20, size: \{29, 29}, side padding: 0, vertical padding: 0, origin: \{{left + 66}, {top + 165}}, text: \{text: "$negative", font: "BookmanOldStyle-Bold", size: 22, alignment: center}, fill: radial fill}
-|] 
--}
-
+make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{39, 39}, side padding: 0, vertical padding: 0, origin: \{{left + 36}, {top + 160}}, text: \{text: "$threshold", font: "BookmanOldStyle-Bold", size: 22, alignment: center}, fill: radial fill}
+|] 		
+{- bug here!! Negative{..} -> [qq|
+make new shape at end of graphics with properties \{draws shadow: false, corner radius: 15, size: \{39, 39}, side padding: 0, vertical padding: 0, origin: \{{left + 36}, {top + 165}}, text: \{text: "$negative", font: "BookmanOldStyle-Bold", size: 22, alignment: center}, fill: radial fill}
+|]-} 
 
         where
         _rule1 = [q|, fill: linear fill, gradient color: {0.9,0.9,0.9}, draws shadow: false, corner radius: 15, side padding: 15, vertical padding: 0, text: {{text: "回合：", font: "MicrosoftJhengHeiBold"}, {text: " ", font: "LucidaGrande"}, {text: "➩", font: "ZapfDingbatsITC"}, {text: " 抽 1 張牌", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "➩  ", font: "ZapfDingbatsITC"}, {text: "2 次行動", font: "MicrosoftJhengHeiRegular"}, {text: " ", font: "LucidaGrande"}, {text: "➩  ", font: "ZapfDingbatsITC"}, {text: "手牌多於 4 張則棄牌

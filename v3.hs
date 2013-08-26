@@ -35,7 +35,7 @@ end tell
 renderCard :: Card -> [Shape]
 renderCard EmptyStudent = map styleIcon [V,A,R,K] ++
     [ renderThreshold 0
-    --  renderNegative 0
+      --renderNegative 0
     , renderSerial _Brown_ 0
     -- , innerRect _Brown_ (Color 0.9 0.85 0.8)
     , outerRect
@@ -63,7 +63,7 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes ++ styleShapes ++
     [ renderFlavor flavor
     , renderTitle name
     , renderThreshold threshold
- --   , renderNegative Negative
+    , renderNegative negative
     , renderEffect effect _DarkRed_ (Color 1 0.9 0.9)
     , renderSerial _Brown_ serial
     , (innerRect _Brown_ (Color 0.9 0.85 0.8))
@@ -104,7 +104,7 @@ renderCard Skill{..} =
 renderCard Course{..} = topicsShapes ++ abilityShapes ++ styleShapes ++
     [ renderFlavor flavor
     , renderTitle name
-    , renderPower interested uninterested
+    , renderPower interested affinity
     , renderSerial _Blue_ serial
     , (innerRect _Blue_ _GrayBlue_)
         { picture = Picture "courses" serial }
@@ -142,6 +142,7 @@ renderCards xo yo (c:cs) = map adjustOffset (renderCard c) ++ maybePageBreak ++ 
         | otherwise
         = (_Left_, _Top_, [PageBreak])
 
+{-
 renderTurns :: Int -> Shape
 renderTurns turns = mkShape
     { left            = 127
@@ -159,6 +160,7 @@ renderTurns turns = mkShape
         , placement = PlacementTop
         }
     }
+    -}
 
 renderEffect :: Text -> Color -> Color -> Shape
 renderEffect effect strokeColor fillColor = mkShape
@@ -205,3 +207,5 @@ abilityText :: Ability -> Body
 -- abilityText Look = mkIcon '✆' 0.2 0.7 0.2 "ArialUnicodeMS"
 abilityText Inspire = mkIcon '♥' 0.2 0.2 0.7 "ArialUnicodeMS"
 abilityText Unparalyze = mkIcon '✙' 0.7 0.2 0.2 "ArialUnicodeMS"
+abilityText Single = mkIcon '☝' 0.2 0.7 0.2 "ArialUnicodeMS"
+abilityText Group = mkIcon '❉' 0.2 0.7 0.2 "ArialUnicodeMS"

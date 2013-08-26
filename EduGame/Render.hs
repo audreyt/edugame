@@ -46,16 +46,16 @@ renderPower i u = Power
 
 renderThreshold :: Threshold -> Shape -- -> Color -> Color -> Shape
 renderThreshold t = Threshold
-    { left            = 0
-    , top             = 0
+    { left            = 80
+    , top             = -120
     , threshold        = t
     }
     
 renderNegative :: Negative -> Shape -- -> Color -> Color -> Shape
-renderNegative n = Negative
+renderNegative n = Threshold
     { left            = 0
     , top             = 0
-    , negative        = n
+    , threshold        = n
     }
 
 
@@ -162,13 +162,13 @@ renderStudentName name fontName = mkShape
     }
 
 renderTopic :: Topic -> Float -> Shape
-renderTopic topic n = icon{ top = top + n * (height + 5) }
+renderTopic topic n = icon{ top = top + n * (height + 8) }
     where
     icon@Shape{..} = topicIcon topic
 
 renderNonTopic :: Topic -> Float -> Shape
 renderNonTopic topic n = icon
-    { top    = top + n * (height + 5)
+    { top    = top + n * (height + 8)
     , left   = 154
     , stroke = StrokeNone
     , fill   = FillNonTopic
@@ -191,7 +191,7 @@ topicIcon topic = mkShape
     { left            = 8
     , top             = 101.5
     , width           = 16
-    , height          = 21
+    , height          = 28
     , cornerRadius    = 5
     , verticalPadding = 12
     , fill            = FillWhite

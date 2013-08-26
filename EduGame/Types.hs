@@ -13,7 +13,7 @@ import qualified Data.Text.IO as T
 import qualified Data.Attoparsec.Text as P
 
 -- 「特殊」：有些牌有特殊能力，如解麻痺、引發興趣等。
-data Ability = Unparalyze | Inspire deriving (Show, Eq, Ord)
+data Ability = Unparalyze | Inspire | Single | Group deriving (Show, Eq, Ord)
 
 data Style = V | A | R | K | Anti Style deriving Show
 
@@ -58,7 +58,7 @@ data Card
     | Action -- 行動
         { serial            :: Int        -- 序號
         , name              :: Text       -- 名稱
-        , turns             :: Int        -- 所需回合
+--        , turns             :: Int        -- 所需回合
         , effect            :: Text       -- 效果
         , flavor            :: Text       -- 斜體字
         }
@@ -79,7 +79,7 @@ data Card
         , name              :: Text       -- 名稱
         , styles            :: [Style]    -- 學習風格
         , interested        :: Power      -- 成就點數(有興趣時)
-        , uninterested      :: Power      -- 成就點數(無興趣時)
+        , affinity      	:: Power      -- 親和力
         , topics            :: [Topic]    -- 學門
         , abilities         :: [Ability]  -- 特殊能力
         , flavor            :: Text       -- 斜體字
