@@ -89,7 +89,7 @@ data Card
     | Action -- 行動
         { serial            :: Int          -- 序號
         , name              :: String       -- 名稱
-        , turns             :: Int          -- 所需回合
+ --       , turns             :: Int          -- 所需回合
         , effect            :: String       -- 效果
         , flavor            :: String       -- 斜體字
         }

@@ -17,24 +17,39 @@ data Ability = Unparalyze | Inspire deriving (Show, Eq, Ord)
 
 data Style = V | A | R | K | Anti Style deriving Show
 
+-- 「學門」：遊戲有「文史哲」、「數理」、「社會」、「藝能」四個學門。
+data Topic = Chi | Nat | Soc | Art deriving (Eq, Ord, Show, Enum, Bounded)
+
+
+{-
 -- 「學門」：遊戲有「數學」、「中文」、「英文」、「自然」、「社會」、「藝術」、「健體」七個學門。
 data Topic = Mat | Chi | Eng | Nat | Soc | Art | Phy deriving (Eq, Ord, Show, Enum, Bounded)
+-}
 
 type Power = Maybe Int
 
+
+---- 學門簡寫
+c,n,s,a :: Topic
+c = Chi; n = Nat; s = Soc; a = Art
+
+{-
 ---- 學門簡寫
 c,e,m,n,s,a,p :: Topic
 c = Chi; e = Eng; m = Mat; n = Nat; s = Soc; a = Art; p = Phy
+-}
 
 type Serial = Int
 type Threshold = Int
+type Negative = Int
 data Card
     = EmptyStudent
     | Student -- 學生
         { serial            :: Serial     -- 序號
         , name              :: Text       -- 名稱
         , styles            :: [Style]    -- 學習風格
-        , threshold         :: Threshold  -- 蒙昧值
+        , threshold         :: Threshold  -- 需求
+        , negative			:: Negative   -- 負向
         , interests         :: [Topic]    -- 有興趣之學門
         , paralyses         :: [Topic]    -- 有麻痺之學門
         , effect            :: Text       -- 效果

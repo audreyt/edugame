@@ -35,6 +35,7 @@ end tell
 renderCard :: Card -> [Shape]
 renderCard EmptyStudent = map styleIcon [V,A,R,K] ++
     [ renderThreshold 0
+    --  renderNegative 0
     , renderSerial _Brown_ 0
     -- , innerRect _Brown_ (Color 0.9 0.85 0.8)
     , outerRect
@@ -51,7 +52,7 @@ renderCard Environment{..} =
 renderCard Action{..} =
     [ renderFlavor flavor
     , renderTitle name
-    , renderTurns turns
+--    , renderTurns turns
     , renderEffect effect _DarkRed_ (Color 1 0.9 0.9)
     , renderSerial _DarkRed_ serial
     , (innerRect _DarkRed_ (Color 0.6 0.5 0.5))
@@ -62,6 +63,7 @@ renderCard Student{..} = topicsShapes ++ nonTopicShapes ++ styleShapes ++
     [ renderFlavor flavor
     , renderTitle name
     , renderThreshold threshold
+ --   , renderNegative Negative
     , renderEffect effect _DarkRed_ (Color 1 0.9 0.9)
     , renderSerial _Brown_ serial
     , (innerRect _Brown_ (Color 0.9 0.85 0.8))

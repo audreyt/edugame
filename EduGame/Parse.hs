@@ -76,7 +76,7 @@ parseAction :: Row -> Card
 parseAction r = Action
     { serial     = r <<< "編號"
     , name       = r <<< "名稱"
-    , turns      = r <<< "所需行動"
+--    , turns      = r <<< "所需行動"
     , effect     = r <<< "效果"
     , flavor     = r <<< "斜體字"
     }
@@ -98,7 +98,8 @@ parseStudent :: Row -> Card
 parseStudent r = Student
     { serial     = r <<< "編號"
     , name       = r <<< "名稱"
-    , threshold  = r <<< "蒙昧值"
+    , threshold  = r <<< "需求"
+    , negative	 = r <<< "負向"
     , flavor     = r <<< "斜體字"
     , effect     = r <<< "效果"
     , styles     = parseStyles r styleMap
@@ -127,7 +128,11 @@ parseGoal r = Goal
     }
 
 styleMap = [(V, "視"), (A, "聽"), (R, "讀"), (K, "作")]
-topicMap = [(c, "文學"), (e, "外語"), (m, "數學"), (n, "自然"), (s, "社會"), (a, "藝術"), (p, "健體")]
+
+{-topicMap = [(c, "文學"), (e, "外語"), (m, "數學"), (n, "自然"), (s, "社會"), (a, "藝術"), (p, "健體")] -}
+
+topicMap = [(c, "文史哲"), (n, "數理"), (s, "社會"), (a, "藝能")]
+
 abilityMap = [(Inspire, 'I'), (Unparalyze, 'U')]
 
 parseStyles r pairs = catMaybes $ map parsePair pairs

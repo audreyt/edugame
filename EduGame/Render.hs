@@ -50,6 +50,14 @@ renderThreshold t = Threshold
     , top             = 0
     , threshold        = t
     }
+    
+renderNegative :: Negative -> Shape -- -> Color -> Color -> Shape
+renderNegative n = Negative
+    { left            = 0
+    , top             = 0
+    , negative        = n
+    }
+
 
 renderSerial :: Color -> Int -> Shape
 renderSerial = SerialShape 0 0
@@ -171,12 +179,11 @@ renderNonTopic topic n = icon
 topicText :: Topic -> Body
 topicText Chi = mkIcon '文' 0.4 0.6 0.7 "AR-PL-New-Kai"
 topicText Nat = mkIcon '☀' 0.5 0.7 0.4 "AR-PL-New-Kai"
-topicText Phy = mkIcon '➶' 0.6 0.6 0.3 "ZapfDingbatsITC"
-topicText Soc = mkIcon '☯' 0.7 0.5 0.7 "ArialUnicodeMS"
 topicText Art = mkIcon '♪' 0.6 0.4 0.4 "Helvetica"
-topicText Eng = mkIcon 'A' 0.6 0.6 0.7 "AmericanTypewriter"
+topicText Soc = mkIcon '☯' 0.7 0.5 0.7 "ArialUnicodeMS"
+{- topicText Eng = mkIcon 'A' 0.6 0.6 0.7 "AmericanTypewriter"
 topicText Mat = mkIcon 'π' 0.4 0.5 0.4 "TrajanPro-Regular"
-
+topicText Phy = mkIcon '➶' 0.6 0.6 0.3 "ZapfDingbatsITC" -}
 
 
 topicIcon :: Topic -> Shape
