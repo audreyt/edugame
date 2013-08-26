@@ -42,7 +42,7 @@ instance ShowQ [Row] where
     showQ xs = "[" ++ (intercalate ", " $ map showQ xs) ++ "]"
 
 parser `from` table = do
-    f <- T.readFile $ __Bin__ ++ "/v2/" ++ table ++ ".txt"
+    f <- T.readFile $ __Bin__ ++ "/data/" ++ table ++ ".txt"
     return $ map parser $ parseTable f
 
 (<<<) :: Grok a => Row -> Text -> a

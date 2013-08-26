@@ -18,7 +18,7 @@ output = do
     skills       <- parseSkill `from` "skills"
     courses      <- parseCourse `from` "courses"
     goals        <- parseGoal `from` "goals"
-    let _Cards_ = students ++ actions ++ environments ++ skills ++ courses
+    let _Cards_ = students ++ actions ++ environments ++ skills ++ courses ++ goals
     return [qq|
 
 tell application "OmniGraffle Professional 5"

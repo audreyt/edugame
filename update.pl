@@ -17,7 +17,7 @@ utf8::upgrade($_);
 
 while (my ($type, $word) = each %map) {
     /^\^+\s+$word\s+(?:\|\|.*\n)(?:\|.*\n)((?:\|.*\n)*)/m or warn "Cannot find $word";
-    open FH, '>:utf8', "data/$type.txt" or die $!;
+    open FH, '>:utf8', "update/$type.txt" or die $!;
     print FH $1;
     close FH;
 }
