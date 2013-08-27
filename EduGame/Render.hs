@@ -80,14 +80,14 @@ styleIcon A = mkShape
 styleIcon R = mkShape
     { width   = 23
     , height  = 17
-    , left    = 152
+    , left    = 125
     , top     = 10
     , picture = Picture "r" 0
     }
 styleIcon K = mkShape
     { width   = 23
     , height  = 33
-    , left    = 125 -- 152
+    , left    = 152 -- 125
     , top     = 3 -- 195
     , picture = Picture "k" 0
     }
