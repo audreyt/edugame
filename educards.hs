@@ -72,6 +72,7 @@ data Card
         , name              :: String       -- 名稱
         , styles            :: Styles       -- 學習風格
         , threshold         :: Int          -- 蒙昧值
+        , negative		    :: Int		    -- 負向情緒
         , topics            :: [Topic]      -- 有興趣之學門
         , paralyzed         :: [Topic]      -- 有麻痺之學門
         , flavor            :: String       -- 斜體字
